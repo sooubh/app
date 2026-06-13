@@ -1,0 +1,6 @@
+{
+  "name": "Sooubh Portfolio",
+  "description": "A cinematic, 3D-enhanced visual portfolio and app library showcase for Sooubh (Sourabh Singh), mobile and Flutter developer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
