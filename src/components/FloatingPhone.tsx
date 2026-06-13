@@ -213,6 +213,69 @@ export default function FloatingPhone() {
 
     scene.add(phoneGroup);
 
+    // STATIC PEDESTAL (Doesn't float with phone, added directly to scene)
+    const pedestalGeom = new THREE.CylinderGeometry(3.6, 3.9, 0.25, 64);
+    const pedestalMat = new THREE.MeshStandardMaterial({
+      color: 0xF3F4F6, // Sleek off-white
+      roughness: 0.1,
+      metalness: 0.15,
+    });
+    const pedestal = new THREE.Mesh(pedestalGeom, pedestalMat);
+    pedestal.position.set(0, -4.6, 0);
+    pedestal.receiveShadow = true;
+    scene.add(pedestal);
+
+    // orbitGroup for tilted gold/orange orbit paths and particles
+    const orbitGroup = new THREE.Group();
+    orbitGroup.rotation.x = 0.5; // Tilt forward
+    orbitGroup.rotation.z = -0.3; // Tilt sideways
+    orbitGroup.position.set(0, -0.5, 0);
+    scene.add(orbitGroup);
+
+    // First Ellipse wireframe
+    const ringGeom1 = new THREE.RingGeometry(4.8, 4.82, 64);
+    const ringMat1 = new THREE.MeshBasicMaterial({
+      color: 0xFBAF24, // Light gold/orange
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.25
+    });
+    const ring1 = new THREE.Mesh(ringGeom1, ringMat1);
+    ring1.rotation.x = Math.PI / 2; // Lie flat in orbit group
+    orbitGroup.add(ring1);
+
+    // Second Ellipse wireframe (slightly larger radius)
+    const ringGeom2 = new THREE.RingGeometry(5.8, 5.82, 64);
+    const ringMat2 = new THREE.MeshBasicMaterial({
+      color: 0xEA580C, // Deep orange
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.18
+    });
+    const ring2 = new THREE.Mesh(ringGeom2, ringMat2);
+    ring2.rotation.x = Math.PI / 2;
+    orbitGroup.add(ring2);
+
+    // Particle 1 on inner orbit
+    const partGeom1 = new THREE.SphereGeometry(0.18, 16, 16);
+    const partMat1 = new THREE.MeshStandardMaterial({
+      color: 0xEA580C,
+      emissive: 0xEA580C,
+      emissiveIntensity: 1.5,
+    });
+    const particle1 = new THREE.Mesh(partGeom1, partMat1);
+    orbitGroup.add(particle1);
+
+    // Particle 2 on outer orbit
+    const partGeom2 = new THREE.SphereGeometry(0.12, 16, 16);
+    const partMat2 = new THREE.MeshStandardMaterial({
+      color: 0xF59E0B,
+      emissive: 0xF59E0B,
+      emissiveIntensity: 1.2,
+    });
+    const particle2 = new THREE.Mesh(partGeom2, partMat2);
+    orbitGroup.add(particle2);
+
     // LIGHTING
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambientLight);
@@ -284,6 +347,15 @@ export default function FloatingPhone() {
         bar.scale.y = factor;
         bar.position.y = 0.4 + (factor * 0.7) - 1.1; // adjust pivot
       });
+
+      // Position orbiting particles on their coordinate ellipses
+      const pos1 = time * 0.45;
+      particle1.position.x = Math.cos(pos1) * 4.8;
+      particle1.position.z = Math.sin(pos1) * 4.8;
+
+      const pos2 = -time * 0.65 + 2.0; // opposite direction and starting offset
+      particle2.position.x = Math.cos(pos2) * 5.8;
+      particle2.position.z = Math.sin(pos2) * 5.8;
 
       // Apply transforms (Floating physics + Cursor tilts)
       phoneGroup.position.y = Math.sin(time * 1.6) * 0.55; // float up and down

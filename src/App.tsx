@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Home from './pages/Home';
 import Apps from './pages/Apps';
@@ -9,6 +10,46 @@ import Footer from './components/Footer';
 import ParticleBackground from './components/ParticleBackground';
 import CursorGlow from './components/CursorGlow';
 import AmbientBackground from './components/AmbientBackground';
+
+function KeyboardShortcutNavigator() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if user is typing in input or editable elements
+      const target = event.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+         target.tagName === 'TEXTAREA' ||
+         target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // Ignore with modifier keys to avoid disrupting browser shortcuts
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      if (key === 'h') {
+        navigate('/');
+      } else if (key === 'a') {
+        navigate('/apps');
+      } else if (key === 'c') {
+        navigate('/contact');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigate]);
+
+  return null;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -76,6 +117,7 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <KeyboardShortcutNavigator />
       <div className="relative min-h-screen bg-bg text-zinc-800 font-sans overflow-x-hidden selection:bg-amber/20 selection:text-amber flex flex-col justify-between">
         {/* Dynamic fluid gradient colored background blobs */}
         <AmbientBackground />

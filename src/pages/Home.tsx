@@ -4,7 +4,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight, Sparkles, Smartphone, Award, Shield, CheckCircle, 
   ChevronDown, ChevronUp, Cpu, Database, Play, Code, Zap, 
-  RefreshCw, Terminal, Activity, FileText, Heart, ShieldAlert 
+  RefreshCw, Terminal, Activity, FileText, Heart, ShieldAlert,
+  Rocket, Users
 } from 'lucide-react';
 import FloatingPhone from '../components/FloatingPhone';
 import { apps } from '../data/apps';
@@ -291,35 +292,141 @@ export default function Home() {
       </header>
 
       {/* 2. STATS BAR SECTION */}
-      <section className="w-full bg-white/80 border-y border-zinc-200/80 shadow-[0_2px_15px_rgba(0,0,0,0.015)] backdrop-blur-md relative z-10 select-none">
+      <section className="px-6 max-w-7xl mx-auto mb-16 relative z-10 select-none">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 35 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-105px' }}
           transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="max-w-7xl mx-auto px-6 py-12 md:py-16 grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-14 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200"
+          className="bg-white/90 backdrop-blur-md border border-zinc-200 rounded-[2rem] p-8 md:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.02)] flex flex-col lg:flex-row items-stretch justify-between gap-10 lg:gap-6 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200/80"
         >
-          {[
-            { value: '15,000+', label: 'Active User Interactions' },
-            { value: '0.0ms', label: 'Local SQLite Sync Latency' },
-            { value: 'SITRC', label: 'CE Sandip Foundation • Nashik' },
-            { value: 'AWS', label: 'Summit Attendee & Cloud Architect' }
-          ].map((stat, idx) => (
-            <div 
-              key={stat.label} 
-              className={`flex flex-col items-center lg:items-start text-center lg:text-left justify-center ${
-                idx > 0 ? 'pt-8 lg:pt-0 lg:pl-12' : 'pb-0'
-              }`}
-            >
-              <span className="font-syne font-black text-4xl lg:text-5xl text-amber leading-none tracking-tighter bg-gradient-to-r from-amber to-orange-700 bg-clip-text text-transparent">
-                {stat.value}
+          {/* Trusted By Column */}
+          <div className="flex flex-col items-start gap-4 pb-8 lg:pb-0 lg:pr-8 lg:max-w-[240px] w-full">
+            <div>
+              <span className="text-[10px] font-sans font-extrabold uppercase tracking-[0.15em] text-zinc-400">
+                Trusted by
               </span>
-              <span 
-                className="font-sans text-zinc-550 text-sm font-semibold tracking-wide mt-2.5 uppercase text-[11px]"
-                dangerouslySetInnerHTML={{ __html: stat.label }}
-              />
+              <p className="text-zinc-750 text-[13px] font-sans font-extrabold mt-1">
+                thousands of users
+              </p>
             </div>
-          ))}
+            
+            <div className="flex items-center -space-x-2.5">
+              {[
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80",
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
+                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80",
+                "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=80&h=80&q=80"
+              ].map((src, i) => (
+                <img 
+                  key={i}
+                  src={src} 
+                  alt="User Avatar"
+                  referrerPolicy="no-referrer"
+                  className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm transition-transform hover:scale-110 relative z-[5]"
+                />
+              ))}
+              <div className="w-9 h-9 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center font-mono font-black text-[10px] text-orange-600 shadow-sm relative z-[6]">
+                1K+
+              </div>
+            </div>
+          </div>
+
+          {/* Specialized In Column */}
+          <div className="flex flex-col items-start gap-4 pt-8 lg:pt-0 pb-8 lg:pb-0 lg:px-10 flex-1 w-full">
+            <span className="text-[10px] font-sans font-extrabold uppercase tracking-[0.15em] text-zinc-400">
+              Specialized In
+            </span>
+            
+            <div className="flex flex-wrap items-center gap-5 mt-1">
+              {[
+                {
+                  name: 'Flutter',
+                  svg: (
+                    <svg className="w-5 h-5 text-sky-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M14.314 0L2.3 12L6.305 16.005L22.314 0H14.314Z"/>
+                      <path d="M14.314 24L6.305 16.005L2.3 12L14.314 0M14.314 24L22.314 16.005H14.314L8.309 22L14.314 24Z"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Dart',
+                  svg: (
+                    <svg className="w-5 h-5 text-cyan-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M21.4 7.5L16.5 2.6c-.4-.4-1-.4-1.4 0L3.3 14.4c-.4.4-.4 1 0 1.4l4.9 4.9c.4.4 1 .4 1.4 0l11.8-11.8c.4-.4.4-1 0-1.4z"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Firebase',
+                  svg: (
+                    <svg className="w-5 h-5 text-amber-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.8 11.5L15.6 5.1c-.2-.4-.7-.5-1-.2l-2.4 2.4-4-7.6c-.2-.4-.8-.4-1 0L3.5 18.7l7.7 4.3c.5.3 1.1.3 1.6 0l7.7-4.3c.4-.2.6-.7.5-1.2l-2.2-6z"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Supabase',
+                  svg: (
+                    <svg className="w-5 h-5 text-emerald-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M14 2L4 14h7v8l10-12h-7z"/>
+                    </svg>
+                  )
+                },
+                {
+                  name: 'Riverpod',
+                  svg: (
+                    <svg className="w-5 h-5 text-indigo-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 13v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 1.58-.49 3.04-1.3 4.28z"/>
+                    </svg>
+                  )
+                }
+              ].map((tech) => (
+                <div key={tech.name} className="flex flex-col items-center gap-1.5 group/tech cursor-pointer">
+                  <div className="w-11 h-11 rounded-xl bg-white border border-zinc-150/85 shadow-[0_4px_12px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] hover:border-amber/35 hover:-translate-y-0.5 flex items-center justify-center transition-all duration-300 relative overflow-hidden">
+                    {tech.svg}
+                  </div>
+                  <span className="text-[9px] font-sans font-bold text-zinc-400 group-hover/tech:text-amber transition-colors">
+                    {tech.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Shipped & Active Columns Container */}
+          <div className="flex flex-col sm:flex-row items-center gap-8 lg:gap-10 pt-8 lg:pt-0 lg:pl-10 w-full lg:w-auto">
+            {/* Shipped */}
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="w-11 h-11 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-650 shrink-0">
+                <Rocket size={18} />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-syne font-black text-2xl text-zinc-900 leading-none">
+                  15+
+                </span>
+                <span className="text-[9px] uppercase font-sans font-extrabold tracking-wider text-zinc-400 mt-1">
+                  Projects Shipped
+                </span>
+              </div>
+            </div>
+
+            {/* Active Users */}
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="w-11 h-11 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-650 shrink-0">
+                <Users size={18} />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-syne font-black text-2xl text-zinc-900 leading-none">
+                  1K+
+                </span>
+                <span className="text-[9px] uppercase font-sans font-extrabold tracking-wider text-zinc-400 mt-1">
+                  Active Users
+                </span>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </section>
 

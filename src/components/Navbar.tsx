@@ -62,8 +62,8 @@ export default function Navbar() {
                 {link.name}
                 {isActive && (
                   <motion.div
-                    layoutId="activeDot"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber"
+                    layoutId="activeBar"
+                    className="absolute -bottom-1 left-0 right-0 h-[2px] bg-amber"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
