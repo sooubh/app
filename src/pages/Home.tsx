@@ -1,1128 +1,1544 @@
 import { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'motion/react';
 import { 
   ArrowRight, Sparkles, Smartphone, Award, Shield, CheckCircle, 
-  ChevronDown, ChevronUp, Cpu, Database, Play, Code, Zap, 
-  RefreshCw, Terminal, Activity, FileText, Heart, ShieldAlert,
-  Rocket, Users
+  ChevronRight, Database, Code, Zap, RefreshCw, Terminal, 
+  Activity, Star, Globe, Lock, Cpu, Heart, AlertCircle, 
+  Send, Server, GitBranch, MessageSquare, Play, Video, Eye, CheckCircle2
 } from 'lucide-react';
 import FloatingPhone from '../components/FloatingPhone';
-import { apps } from '../data/apps';
-import TechTag from '../components/TechTag';
+import InteractiveArchitecture from '../components/InteractiveArchitecture';
 
-const featuredSpecsMap: Record<string, {
-  database: string;
-  autonomy: string;
-  sync: string;
-  noteworthy: string;
-}> = {
-  pactora: {
-    database: 'Drift SQLite (C-bindings)',
-    autonomy: '10/10 offline isolation',
-    sync: 'Zero network calls, 100% Client-Side sandbox',
-    noteworthy: 'Fully persistent local promise ledger with Riverpod streams'
-  },
-  btwus: {
-    database: 'Drift Relational SQLite',
-    autonomy: '10/10 offline isolation',
-    sync: 'No cloud backups, no data mining',
-    noteworthy: 'Local secure relation vault and relationship milestone tracker'
-  },
-  gullycricket: {
-    database: 'Hive Binary KV Storage',
-    autonomy: '9/10 local-first routing',
-    sync: 'WebSocket match data broadcasts',
-    noteworthy: 'Floating dynamic overlay scoreboard running background processes'
+// Define the core products including Lovyn
+interface FeaturedProduct {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  icon: string;
+  status: 'LIVE' | 'IN DEV' | 'HACKATHON_WINNER';
+  playStoreUrl: string | null;
+  architectureUrl: string;
+  techStack: string[];
+  features: string[];
+  specs: {
+    database: string;
+    isolation: string;
+    security: string;
+    sync: string;
+  };
+  caseStudy: {
+    problem: string;
+    solution: string;
+    architecture: string;
+    impact: string;
+  };
+}
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as any,
+      staggerChildren: 0.15,
+    }
   }
 };
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }
+  }
+};
+
+const featuredProducts: FeaturedProduct[] = [
+  {
+    id: 'pactora',
+    name: 'Pactora',
+    tagline: 'Make promises. Keep them.',
+    description: 'A premium, fully offline promise ledger app to commit, track, and complete personal responsibilities and peer-to-peer promises with 100% on-device cryptography.',
+    icon: '🤝',
+    status: 'LIVE',
+    playStoreUrl: 'https://play.google.com/store/apps/details?id=com.sooubh.pactora',
+    architectureUrl: '#architecture-showcase',
+    techStack: ['Flutter', 'Dart', 'Drift SQLite', 'Riverpod', 'AdMob'],
+    features: [
+      'Zero Cloud Footprint — logs exist purely in secure local sectors',
+      'Reactive Event Streams using Drift SQLite direct C-bindings',
+      'Interactive promise milestones with native Android overlay alerts'
+    ],
+    specs: {
+      database: 'Drift SQLite (C-Bindings)',
+      isolation: '10/10 On-Device Sandbox',
+      security: 'Hardware keystore encryption key derivation',
+      sync: 'Zero network calls, 100% client-side compliance'
+    },
+    caseStudy: {
+      problem: 'Cloud-based habit and commitment trackers sell user telemetry and fail to operate in remote mountain ranges or during network blockages, introducing friction to self-discipline.',
+      solution: 'A native, highly performant on-device application built on top of a sqlite embedded storage framework, guaranteeing secure, lifetime-free records accessible instantly.',
+      architecture: 'Riverpod StreamProvider binds directly to Drift SQLite reactive tables, automatically reflecting local modifications with sub-millisecond local reads.',
+      impact: 'Acquired 5,000+ downloads with zero spend and sustained a crash-free session rate of 99.8% on active devices.'
+    }
+  },
+  {
+    id: 'btwus',
+    name: 'BtwUs',
+    tagline: 'Private memories, offline forever.',
+    description: 'The ultimate offline relationship companion. Archive milestones, shared secrets, and anniversary chronicles in a local, cryptographically sealed digital vault.',
+    icon: '💑',
+    status: 'IN DEV',
+    playStoreUrl: null,
+    architectureUrl: '#architecture-showcase',
+    techStack: ['Flutter', 'Dart', 'Drift DB', 'AES-256', 'GoRouter'],
+    features: [
+      'Symmetric encryption wrapper protecting personal diary logs',
+      'Automatic offline milestone reminders and high-end timeline views',
+      'Full exportable JSON encryption archives to migrate across devices'
+    ],
+    specs: {
+      database: 'Drift Relational SQLite',
+      isolation: '10/10 Local Ledger Isolation',
+      security: 'AES-256 symmetric cipher wrapping on database stream',
+      sync: 'Decentralized local keys, zero server storage footprints'
+    },
+    caseStudy: {
+      problem: 'Modern couples have central cloud servers mining their intimate photos, chats, and relationship timelines for micro-targeted marketing strategies.',
+      solution: 'A beautifully designed, premium user experience that runs purely at the local level. All milestones, media references, and diary pages compile into a secure SQLite binary layer.',
+      architecture: 'Symmetric encryptions are derived from an custom user passphrase combined with hardware-backed keychains to block unauthorized on-device extractions.',
+      impact: 'Designed as a premium, niche application targeting visual perfectionists. Ready for dual App Store launches in mid-2026.'
+    }
+  },
+  {
+    id: 'gullycricket',
+    name: 'Gully Cricket Scoring',
+    tagline: 'Score local matches, zero cellular signal required.',
+    description: 'A revolutionary offline cricket scorekeeping engine configured with dynamic overlay scoreboards, real-time WebSocket match broadcasts, and local binary disk persistence.',
+    icon: '🏏',
+    status: 'LIVE',
+    playStoreUrl: 'https://play.google.com/store/apps/details?id=com.sooubh.gullycricket',
+    architectureUrl: '#architecture-showcase',
+    techStack: ['Flutter', 'Dart', 'Hive Binary KV', 'WebSocket', 'Riverpod'],
+    features: [
+      'Ultra-fast scoring byte buffers utilizing local Hive schemas',
+      'AdMob integration wrapped inside offline cache-retrying layers',
+      'Floating overlay system showing scores when phone is locked'
+    ],
+    specs: {
+      database: 'Hive Binary Key-Value Store',
+      isolation: '9/10 Client Autonomy',
+      security: 'Custom binary schema serialization',
+      sync: 'Local WiFi peer broadcast and state broadcasts'
+    },
+    caseStudy: {
+      problem: 'In India, gully cricket matches are played on fields with terrible cellular reception. Mainstream scoring apps crash on connection timeouts or lag behind the actual delivery.',
+      solution: 'A lightweight binary-first scorekeeper that writes to local disk instantly. If a local signal is detected, peers share coordinates over local wireless channels.',
+      architecture: 'A state notifier registers match events (balls, runs, wickets) and flushes the packed state to on-device Hive storage in less than 2 milliseconds.',
+      impact: 'Used across hundreds of local neighborhoods, maintaining consistent 60fps and keeping 100% database access live without Wi-Fi.'
+    }
+  },
+  {
+    id: 'lovyn',
+    name: 'Lovyn',
+    tagline: 'The future of connection in public.',
+    description: 'Sourabh’s flag-ship upcoming product: An immersive, high-end relationship visualizer and connection platform powered by secure peer ciphers, Gemini recommendations, and interactive timelines.',
+    icon: '🔥',
+    status: 'IN DEV',
+    playStoreUrl: null,
+    architectureUrl: '#architecture-showcase',
+    techStack: ['Flutter', 'WebRTC', 'Supabase Edge', 'Gemini Live SDK', 'Riverpod'],
+    features: [
+      'Intelligent match assistance utilizing server-assisted local LLM models',
+      'Secure symmetric keys exchanged over standard WebRTC channels',
+      'Aesthetic editorial layout with fluid fluid physics engine components'
+    ],
+    specs: {
+      database: 'Supabase Offline Cache + local Drift',
+      isolation: '8/10 Hybrid Ledger',
+      security: 'End-to-End encrypted matching data envelopes',
+      sync: 'WebRTC p2p direct matching and Gemini AI assistance'
+    },
+    caseStudy: {
+      problem: 'Dating and match apps have degenerated into algorithmic gamifications designed to keep users lonely, using cheap patterns and intrusive tracking.',
+      solution: 'A boutique, founder-driven matching concept prioritizing visual beauty and deep system safety. Lovyn utilizes semantic processing models to suggest meaningful conversation topics.',
+      architecture: 'Client states are managed via Riverpod while WebRTC handles direct, encrypted local matching without recording logs on third-party servers.',
+      impact: 'Currently under active stealth development. Targeted beta launch for selected testing cohorts scheduled for Autumn 2026.'
+    }
+  }
+];
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [expandedFeaturedApps, setExpandedFeaturedApps] = useState<Record<string, boolean>>({});
   
-  // Interactive Sandbox State
-  const [activePlaygroundTab, setActivePlaygroundTab] = useState<'pactora' | 'btwus' | 'gullycricket'>('pactora');
+  // Interactive simulator / architecture selector state
+  const [activeArchTab, setActiveArchTab] = useState<'flow' | 'riverpod' | 'sqlite' | 'ai'>('flow');
   
-  // Simulated Interactive States
-  const [pactoraPromises, setPactoraPromises] = useState<{ id: string; title: string; kept: boolean }[]>([
-    { id: '1', title: 'Complete SQLite database encryption scheme', kept: true },
-    { id: '2', title: 'Compile 120Hz smooth scrolling rendering lists', kept: false },
-    { id: '3', title: 'Initiate Google Play Store production release build', kept: false }
+  // Interactive Sandbox state for Pactora
+  const [promises, setPromises] = useState([
+    { id: '1', title: 'Compile 120Hz thread scroll container', kept: true },
+    { id: '2', title: 'Verify on-device AES security wrappers', kept: false },
+    { id: '3', title: 'Publish Lovyn beta pipeline', kept: false }
   ]);
-  
-  const [btwusMilestones, setBtwusMilestones] = useState<{ id: string; title: string; date: string }[]>([
-    { id: '1', title: 'Our First Match on GoCrush', date: 'Oct 2025' },
-    { id: '2', title: 'Shared Private Cipher Vault Keys', date: 'Feb 2026' }
-  ]);
-  
-  const [cricketScore, setCricketScore] = useState({ runs: 42, wickets: 3, balls: 24 });
-  const [playgroundLogs, setPlaygroundLogs] = useState<{ id: string; text: string; type: 'system' | 'db' | 'action' }[]>([
-    { id: 'init', text: 'System diagnostics online. Sandbox loaded successfully.', type: 'system' }
+  const [simulatedLogs, setSimulatedLogs] = useState<string[]>([
+    'System initialization... Sandbox ready.',
+    'SQLite Database loaded: state_sandbox.db [v1.04]'
   ]);
 
-  const addLog = (text: string, type: 'system' | 'db' | 'action') => {
+  const addSimulatedLog = (log: string) => {
     const time = new Date().toLocaleTimeString();
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-    setPlaygroundLogs(prev => [
-      { id: uniqueId, text: `[${time}] ${text}`, type },
-      ...prev.slice(0, 8) // Limit to 9 recent log events to avoid crowding
-    ]);
+    setSimulatedLogs(prev => [`[${time}] ${log}`, ...prev.slice(0, 5)]);
   };
 
-  const handleTogglePactoraPromise = (id: string, title: string) => {
-    setPactoraPromises(prev => prev.map(p => {
+  const handleTogglePromise = (id: string, text: string) => {
+    setPromises(prev => prev.map(p => {
       if (p.id === id) {
-        const nextKept = !p.kept;
-        addLog(`ACTION: Toggled promise "${title}" -> ${nextKept ? 'KEPT' : 'PENDING'}`, 'action');
-        addLog(`DRIFT SQL: UPDATE promise_ledger SET kept = ${nextKept ? 1 : 0} WHERE id = '${id}';`, 'db');
-        addLog(`DRIFT STREAMS: Broadcast updated ledger state to 1 local active stream consumer.`, 'system');
-        return { ...p, kept: nextKept };
+        const nextState = !p.kept;
+        addSimulatedLog(`ACTION: Toggled promise "${text}" -> ${nextState ? 'KEPT' : 'PENDING'}`);
+        addSimulatedLog(`DRIFT-SQL: UPDATE promises SET status = ${nextState ? 1 : 0} WHERE id = ${id};`);
+        return { ...p, kept: nextState };
       }
       return p;
     }));
   };
 
-  const handleAddPactoraPromise = () => {
-    const titles = [
-      'Implement binary state stream checkpoints',
-      'Optimize on-device AES key exchange logic',
-      'Verify 120Hz layout frames during scrolling',
-      'Benchmark Hive storage write latency under heavy loads'
+  const handleAddPromise = () => {
+    const options = [
+      'Establish Supabase connection vault',
+      'Refactor Drift auto-migration blocks',
+      'Optimize WebRTC handshake loops',
+      'Benchmark Hive storage serialization'
     ];
-    const newTitle = titles[Math.floor(Math.random() * titles.length)];
-    const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    
-    setPactoraPromises(prev => [...prev, { id: newId, title: newTitle, kept: false }]);
-    addLog(`ACTION: Appended client-side promise task: "${newTitle}"`, 'action');
-    addLog(`DRIFT SQL: INSERT INTO promise_ledger (id, title, kept) VALUES ('${newId}', '${newTitle}', 0);`, 'db');
-  };
-
-  const handleAddBtwMilestone = () => {
-    const milestones = [
-      { title: 'Exchanged local Offline Diary key rings', date: 'Today' },
-      { title: 'Archived anniversary custom photobook', date: 'Today' },
-      { title: 'Tuned personal local micro-messaging loop', date: 'Today' }
-    ];
-    const choice = milestones[Math.floor(Math.random() * milestones.length)];
-    const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    setBtwusMilestones(prev => [...prev, { id: newId, ...choice }]);
-    addLog(`ACTION: Logged new private relationship memory milestone`, 'action');
-    addLog(`AES-256 ENGINE: Cipher key derived securely via local device keychain.`, 'system');
-    addLog(`DRIFT SQL: INSERT INTO shared_vault VALUES ('${newId}', ENCRYPT('${choice.title}'), '${choice.date}');`, 'db');
-  };
-
-  const handleScoreCricket = (runs: number) => {
-    setCricketScore(prev => {
-      const nextRuns = prev.runs + runs;
-      const nextBalls = prev.balls + 1;
-      addLog(`ACTION: Scored +${runs} Run(s) on matching event overlay!`, 'action');
-      addLog(`RIVERPOD STATE: ScoreStateNotifier changed -> (Runs: ${nextRuns}, Balls: ${nextBalls})`, 'system');
-      addLog(`HIVE DB: Committed match record payload to local binary cache frame #24`, 'db');
-      return { ...prev, runs: nextRuns, balls: nextBalls };
-    });
-  };
-
-  const handleWicketCricket = () => {
-    setCricketScore(prev => {
-      if (prev.wickets >= 10) {
-        addLog(`SYSTEM: Game over, all wickets fell. Tally locked.`, 'system');
-        return prev;
-      }
-      const nextWickets = prev.wickets + 1;
-      const nextBalls = prev.balls + 1;
-      addLog(`ACTION: Out! Record bowling wicket down.`, 'action');
-      addLog(`RIVERPOD STATE: Match stats broadcasted via local WebSocket loop.`, 'system');
-      addLog(`HIVE DB: Serialized state frame committed immediately.`, 'db');
-      return { ...prev, wickets: nextWickets, balls: nextBalls };
-    });
-  };
-
-  const handleResetCricket = () => {
-    setCricketScore({ runs: 0, wickets: 0, balls: 0 });
-    addLog(`ACTION: Scorecard Reset. Pitch cleared.`, 'action');
-    addLog(`HIVE DB: Erased binary match state tables successfully.`, 'db');
-  };
-
-  // Log active tab changes
-  useEffect(() => {
-    addLog(`TAB SWITCH: Navigated client context simulator output to *${activePlaygroundTab.toUpperCase()}*`, 'system');
-  }, [activePlaygroundTab]);
-
-  const toggleFeaturedAppSpecs = (appId: string) => {
-    setExpandedFeaturedApps(prev => ({
-      ...prev,
-      [appId]: !prev[appId]
-    }));
-  };
-
-  // Hook for 3D Scroll effects on the phone model (Hero section)
-  const { scrollY } = useScroll();
-  const phoneScale = useTransform(scrollY, [0, 600], [1, 0.75]);
-  const phoneOpacity = useTransform(scrollY, [0, 500], [1, 0.25]);
-  const phoneY = useTransform(scrollY, [0, 600], [0, -80]);
-
-  // Get Top 3 featured projects
-  const featuredApps = apps.filter(app => app.featured);
-
-  // States for card 3D tilt effects
-  const [tilt1, setTilt1] = useState({ x: 0, y: 0 });
-  const [tilt2, setTilt2] = useState({ x: 0, y: 0 });
-  const [tilt3, setTilt3] = useState({ x: 0, y: 0 });
-
-  const handleTilt = (e: React.MouseEvent<HTMLDivElement>, cardIndex: number) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    const maxTilt = 8;
-    const tiltValue = { x: -y * maxTilt, y: x * maxTilt };
-
-    if (cardIndex === 1) setTilt1(tiltValue);
-    if (cardIndex === 2) setTilt2(tiltValue);
-    if (cardIndex === 3) setTilt3(tiltValue);
-  };
-
-  const resetTilt = (cardIndex: number) => {
-    const zero = { x: 0, y: 0 };
-    if (cardIndex === 1) setTilt1(zero);
-    if (cardIndex === 2) setTilt2(zero);
-    if (cardIndex === 3) setTilt3(zero);
-  };
-
-  // Status Styling
-  const getFeaturedStatusStyle = (status: string) => {
-    switch (status) {
-      case 'LIVE': return 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
-      case 'IN DEV': return 'bg-amber-50 text-amber border border-amber/20';
-      default: return 'bg-indigo-50 text-indigo-700 border border-indigo-200/80';
-    }
+    const newTitle = options[Math.floor(Math.random() * options.length)];
+    const newId = String(Date.now());
+    setPromises(prev => [...prev, { id: newId, title: newTitle, kept: false }]);
+    addSimulatedLog(`ACTION: Instantiated task "${newTitle}"`);
+    addSimulatedLog(`DRIFT-SQL: INSERT INTO promises (id, title, status) VALUES (${newId}, '${newTitle}', 0);`);
   };
 
   return (
-    <div ref={containerRef} className="relative z-10 w-full overflow-hidden bg-bg">
+    <div ref={containerRef} className="relative z-10 w-full overflow-hidden bg-white text-[#111111] font-sans selection:bg-[#FF6B00]/10 selection:text-[#FF6B00]">
       
-      {/* GLOBAL BACKGROUND METRIC GRID FRAME ACCENTS */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.35] pointer-events-none z-0" />
+      {/* Subtle overlay noise/grid for high-end feel */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#fafafa_1px,transparent_1px),linear-gradient(to_bottom,#fafafa_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.45] pointer-events-none z-0" />
 
-      {/* AMBIENT GLOW BLOBS */}
-      <div className="absolute top-[10%] left-[-10%] w-[35rem] h-[35rem] bg-amber-dim/50 rounded-full filter blur-[120px] mix-blend-multiply opacity-40 animate-blob-1 pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-[-10%] w-[35rem] h-[35rem] bg-orange-100 rounded-full filter blur-[120px] mix-blend-multiply opacity-40 animate-blob-2 pointer-events-none z-0" />
-
-      {/* Hero container */}
-      <header className="relative z-10 select-none">
+      {/* ###################################
+          1. HERO SECTION (120px - 180px padding, occuping full viewport)
+          ################################### */}
+      <motion.header
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={sectionVariants}
+        className="relative min-h-screen flex items-center justify-center pt-32 pb-24 px-6 md:px-12 select-none overflow-hidden max-w-[1400px] mx-auto z-10"
+      >
         
-        {/* 1. HERO SECTION */}
-        <section className="pt-32 sm:pt-40 md:pt-48 pb-20 md:pb-28 px-6 max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 md:gap-24">
+        {/* Subtle abstract background accent */}
+        <div className="absolute top-[20%] right-[-10%] w-[45rem] h-[45rem] bg-[#FF6B00]/3 rounded-full filter blur-[150px] pointer-events-none z-0" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center w-full relative z-10">
           
-          {/* Left: Text Content (58%) */}
-          <motion.div
-            initial={{ opacity: 0, y: 55 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: 'easeOut' }}
-            className="w-full lg:w-[58%] flex flex-col items-start gap-8"
-          >
-            {/* Eyebrow badge */}
-            <div className="inline-block transform hover:scale-[1.03] transition-transform duration-300">
-              <span className="text-amber text-[11px] font-mono font-bold tracking-[0.25em] uppercase bg-amber-dim px-4.5 py-2.5 rounded-full border border-amber/30 shadow-[0_2px_8px_rgba(234,88,12,0.06)]">
-                🚀 GOOGLE GEMINI CAMPUS AMBASSADOR • NASHIK, IN
+          {/* Left Hero Side (col-span-7) */}
+          <div className="lg:col-span-7 flex flex-col items-start gap-8 md:gap-10">
+            {/* Top Badge */}
+            <motion.div 
+              variants={itemVariants}
+              className="inline-flex items-center gap-2 bg-[#FAFAFA] border border-zinc-150 rounded-full px-4 py-2"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#FF6B00] animate-pulse" />
+              <span className="text-[10px] sm:text-[11px] font-mono tracking-wider font-bold text-[#666666] uppercase">
+                Google Gemini Campus Ambassador • Nashik, IN
               </span>
-            </div>
+            </motion.div>
 
-            {/* Ultimate Heading */}
-            <h1 className="font-syne font-black text-5xl sm:text-7xl lg:text-8.5xl leading-[0.95] tracking-tight text-zinc-950 max-w-2xl">
-              Building Apps <br />
-              People <span className="text-amber bg-gradient-to-r from-amber to-amber-glow bg-clip-text text-transparent">Actually Use.</span>
-            </h1>
+            {/* Typography Display Title */}
+            <motion.div variants={itemVariants}>
+              <h1 className="font-syne font-extrabold text-5xl sm:text-7xl lg:text-8xl leading-[0.92] tracking-tight text-[#111111]">
+                Building Apps <br />
+                People <span className="text-[#FF6B00] relative italic font-bold">Actually <span className="absolute bottom-1 sm:bottom-2 left-0 right-0 h-1 sm:h-2 bg-[#FF6B00]/10 rounded-full" />Use.</span>
+              </h1>
+            </motion.div>
 
-            {/* Elite descriptive Subtext */}
-            <p className="font-sans text-zinc-650 text-base sm:text-xl leading-relaxed max-w-xl font-normal">
-              Flutter developer, system architect, and hackathon pioneer. Specializing in highly performant, 
-              local-first architectures and reactive structures that run fully isolated. I ship premium apps 
-              to thousands of active users.
-            </p>
+            {/* Subheadline description */}
+            <motion.p 
+              variants={itemVariants}
+              className="font-sans text-[#666666] text-base sm:text-xl leading-relaxed max-w-xl font-normal"
+            >
+              I build high-performance Flutter applications, offline-first systems, and scalable products used by real people. Crafting bespoke client-side experiences with complete hardware security.
+            </motion.p>
 
-            {/* CTA row with outstanding spacings */}
-            <div className="flex flex-wrap items-center gap-5 mt-4 w-full sm:w-auto">
-              <Link
-                to="/apps"
-                className="w-full sm:w-auto px-10 py-5 bg-amber hover:bg-amber-glow text-white font-bold rounded-full text-base hover:scale-105 active:scale-100 transition-all duration-300 shadow-[0_10px_25px_rgba(234,88,12,0.22)] flex items-center justify-center gap-2 group/btn cursor-pointer select-text border-b-2 border-orange-700"
+            {/* Elite Action row */}
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto"
+            >
+              <a
+                href="#featured-products"
+                className="px-8.5 py-4.5 bg-[#111111] hover:bg-[#FF6B00] text-white font-semibold rounded-full text-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-[0_12px_24px_rgba(0,0,0,0.06)] flex items-center justify-center gap-2 group cursor-pointer"
               >
-                <span>Explore Showcase</span>
-                <ArrowRight size={18} className="group-hover/btn:translate-x-1.5 transition-transform duration-300" />
-              </Link>
+                <span>Explore My Work</span>
+                <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+              </a>
               
               <Link
                 to="/contact"
-                className="w-full sm:w-auto px-10 py-5 border border-zinc-300 text-zinc-800 font-bold rounded-full text-base hover:border-amber hover:text-amber hover:bg-amber-dim/10 bg-white shadow-sm transition-all duration-300 flex items-center justify-center cursor-pointer outline-none"
+                className="px-8.5 py-4.5 bg-white border border-zinc-200 hover:border-[#111111] text-[#111111] font-semibold rounded-full text-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer outline-none"
               >
                 Let's Collaborate
               </Link>
-            </div>
+            </motion.div>
 
-            {/* Stat tags row with dynamic highlights */}
-            <div className="flex flex-wrap items-center gap-3.5 mt-8 border-t border-zinc-200/80 pt-8 w-full max-w-xl">
-              <div className="bg-white border border-zinc-200 px-5 py-3 rounded-full flex items-center gap-2.5 shadow-sm hover:border-zinc-300 transition-colors">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse"></span>
-                <span className="text-xs text-zinc-700 font-semibold font-mono tracking-wider">6+ PRODUCTION APPS LIVE</span>
-              </div>
-              <div className="bg-white border border-zinc-200 px-5 py-3 rounded-full flex items-center gap-2 shadow-sm hover:border-zinc-300 transition-colors">
-                <Sparkles size={13} className="text-amber" />
-                <span className="text-xs text-zinc-700 font-semibold font-mono tracking-wider">PLAY STORE PUBLISHED</span>
-              </div>
-              <div className="bg-white border border-zinc-200 px-5 py-3 rounded-full flex items-center gap-2 shadow-sm hover:border-zinc-300 transition-colors">
-                <Award size={13} className="text-indigo-600" />
-                <span className="text-xs text-zinc-700 font-semibold font-mono tracking-wider">HACKATHON GOLD WINNER</span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right: Master 3D Phone Model (42%) */}
-          <motion.div
-            style={{
-              scale: phoneScale,
-              opacity: phoneOpacity,
-              y: phoneY,
-            }}
-            className="w-full lg:w-[42%] h-[420px] sm:h-[520px] lg:h-[620px] flex items-center justify-center relative select-none"
-          >
-            <div className="absolute inset-0 bg-radial-[circle,rgba(234,88,12,0.06)_0%,rgba(0,0,0,0)_65%] blur-3xl rounded-full" />
-            <FloatingPhone />
-          </motion.div>
-        </section>
-      </header>
-
-      {/* 2. STATS BAR SECTION */}
-      <section className="px-6 max-w-7xl mx-auto mb-16 relative z-10 select-none">
-        <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-105px' }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          className="bg-white/90 backdrop-blur-md border border-zinc-200 rounded-[2rem] p-8 md:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.02)] flex flex-col lg:flex-row items-stretch justify-between gap-10 lg:gap-6 divide-y lg:divide-y-0 lg:divide-x divide-zinc-200/80"
-        >
-          {/* Trusted By Column */}
-          <div className="flex flex-col items-start gap-4 pb-8 lg:pb-0 lg:pr-8 lg:max-w-[240px] w-full">
-            <div>
-              <span className="text-[10px] font-sans font-extrabold uppercase tracking-[0.15em] text-zinc-400">
-                Trusted by
+            {/* Trust Row */}
+            <motion.div 
+              variants={itemVariants}
+              className="border-t border-zinc-100 pt-8 mt-4 w-full max-w-md"
+            >
+              <span className="text-[10px] font-mono font-bold tracking-widest text-[#666666] uppercase">
+                HONORS & VERIFIABLE STATS
               </span>
-              <p className="text-zinc-750 text-[13px] font-sans font-extrabold mt-1">
-                thousands of users
-              </p>
-            </div>
-            
-            <div className="flex items-center -space-x-2.5">
-              {[
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80",
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80",
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
-                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80",
-                "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=80&h=80&q=80"
-              ].map((src, i) => (
-                <img 
-                  key={i}
-                  src={src} 
-                  alt="User Avatar"
-                  referrerPolicy="no-referrer"
-                  className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm transition-transform hover:scale-110 relative z-[5]"
-                />
-              ))}
-              <div className="w-9 h-9 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center font-mono font-black text-[10px] text-orange-600 shadow-sm relative z-[6]">
-                1K+
-              </div>
-            </div>
-          </div>
-
-          {/* Specialized In Column */}
-          <div className="flex flex-col items-start gap-4 pt-8 lg:pt-0 pb-8 lg:pb-0 lg:px-10 flex-1 w-full">
-            <span className="text-[10px] font-sans font-extrabold uppercase tracking-[0.15em] text-zinc-400">
-              Specialized In
-            </span>
-            
-            <div className="flex flex-wrap items-center gap-5 mt-1">
-              {[
-                {
-                  name: 'Flutter',
-                  svg: (
-                    <svg className="w-5 h-5 text-sky-500 fill-current" viewBox="0 0 24 24">
-                      <path d="M14.314 0L2.3 12L6.305 16.005L22.314 0H14.314Z"/>
-                      <path d="M14.314 24L6.305 16.005L2.3 12L14.314 0M14.314 24L22.314 16.005H14.314L8.309 22L14.314 24Z"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Dart',
-                  svg: (
-                    <svg className="w-5 h-5 text-cyan-600 fill-current" viewBox="0 0 24 24">
-                      <path d="M21.4 7.5L16.5 2.6c-.4-.4-1-.4-1.4 0L3.3 14.4c-.4.4-.4 1 0 1.4l4.9 4.9c.4.4 1 .4 1.4 0l11.8-11.8c.4-.4.4-1 0-1.4z"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Firebase',
-                  svg: (
-                    <svg className="w-5 h-5 text-amber-500 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.8 11.5L15.6 5.1c-.2-.4-.7-.5-1-.2l-2.4 2.4-4-7.6c-.2-.4-.8-.4-1 0L3.5 18.7l7.7 4.3c.5.3 1.1.3 1.6 0l7.7-4.3c.4-.2.6-.7.5-1.2l-2.2-6z"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Supabase',
-                  svg: (
-                    <svg className="w-5 h-5 text-emerald-500 fill-current" viewBox="0 0 24 24">
-                      <path d="M14 2L4 14h7v8l10-12h-7z"/>
-                    </svg>
-                  )
-                },
-                {
-                  name: 'Riverpod',
-                  svg: (
-                    <svg className="w-5 h-5 text-indigo-500 fill-current" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 13v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 1.58-.49 3.04-1.3 4.28z"/>
-                    </svg>
-                  )
-                }
-              ].map((tech) => (
-                <div key={tech.name} className="flex flex-col items-center gap-1.5 group/tech cursor-pointer">
-                  <div className="w-11 h-11 rounded-xl bg-white border border-zinc-150/85 shadow-[0_4px_12px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.03)] hover:border-amber/35 hover:-translate-y-0.5 flex items-center justify-center transition-all duration-300 relative overflow-hidden">
-                    {tech.svg}
-                  </div>
-                  <span className="text-[9px] font-sans font-bold text-zinc-400 group-hover/tech:text-amber transition-colors">
-                    {tech.name}
-                  </span>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="flex flex-col">
+                  <span className="font-syne font-bold text-lg text-[#111111]">Google Gemini</span>
+                  <span className="text-xs text-[#666666] mt-0.5">Campus Ambassador</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-col">
+                  <span className="font-syne font-bold text-lg text-[#111111]">Hackathon</span>
+                  <span className="text-xs text-[#666666] mt-0.5">Gold Winner</span>
+                </div>
+                <div className="flex flex-col mt-2">
+                  <span className="font-syne font-bold text-lg text-[#111111]">6+ Apps</span>
+                  <span className="text-xs text-[#666666] mt-0.5">Production Deployed</span>
+                </div>
+                <div className="flex flex-col mt-2">
+                  <span className="font-syne font-bold text-lg text-[#111111]">15,000+</span>
+                  <span className="text-xs text-[#666666] mt-0.5">User Interactions</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Shipped & Active Columns Container */}
-          <div className="flex flex-col sm:flex-row items-center gap-8 lg:gap-10 pt-8 lg:pt-0 lg:pl-10 w-full lg:w-auto">
-            {/* Shipped */}
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <div className="w-11 h-11 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-650 shrink-0">
-                <Rocket size={18} />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-syne font-black text-2xl text-zinc-900 leading-none">
-                  15+
-                </span>
-                <span className="text-[9px] uppercase font-sans font-extrabold tracking-wider text-zinc-400 mt-1">
-                  Projects Shipped
-                </span>
-              </div>
-            </div>
-
-            {/* Active Users */}
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <div className="w-11 h-11 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-650 shrink-0">
-                <Users size={18} />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-syne font-black text-2xl text-zinc-900 leading-none">
-                  1K+
-                </span>
-                <span className="text-[9px] uppercase font-sans font-extrabold tracking-wider text-zinc-400 mt-1">
-                  Active Users
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* 3. FEATURED APPS SECTION */}
-      <section className="py-28 md:py-36 px-6 max-w-7xl mx-auto relative z-10">
-        
-        {/* Headings with wide margins */}
-        <div className="flex flex-col items-start gap-3 mb-16 md:mb-20">
-          <span className="text-amber text-[11px] font-bold tracking-[0.25em] uppercase bg-amber-dim px-3.5 py-1.5 rounded-full border border-amber/20 shadow-sm">
-            PRODUCTION ARCHITECTURE SHOWCASE
-          </span>
-          <h2 className="font-syne font-black text-4xl sm:text-5.5xl text-zinc-950 tracking-tight leading-none mt-2">
-            My Featured Applications
-          </h2>
-          <div className="w-16 h-1 w-20 bg-amber rounded-full mt-3" />
-        </div>
-
-        {/* Alternate Side Slide Entries with Expandable Technical Drawer */}
-        <div className="flex flex-col gap-16 select-none">
-          {featuredApps.map((app, index) => {
-            const isEven = index % 2 === 0;
-            const tilt = index === 0 ? tilt1 : index === 1 ? tilt2 : tilt3;
-            const isExpanded = !!expandedFeaturedApps[app.id];
-            const spec = featuredSpecsMap[app.id] || {
-              database: 'Drift & SQLite persistence layer',
-              autonomy: '9/10 Client Autonomy',
-              sync: 'Local device keychains and storage streams',
-              noteworthy: 'Custom background services and isolated state pools'
-            };
-            
-            return (
+          {/* Right Hero Side featuring premium device mockup layers (col-span-5) */}
+          <motion.div
+            variants={itemVariants}
+            className="lg:col-span-5 flex items-center justify-center relative min-h-[500px]"
+          >
+            {/* Background absolute floating layers to show visual depth */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none select-none">
+              {/* Back Card representing a styled terminal */}
               <motion.div
-                key={app.id}
-                initial={{ 
-                  opacity: 0, 
-                  scale: 0.92, 
-                  rotateX: 10,
-                  rotateY: isEven ? 8 : -8,
-                  y: 50 
-                }}
-                whileInView={{ 
-                  opacity: 1, 
-                  scale: 1, 
-                  rotateX: 0,
-                  rotateY: 0,
-                  y: 0 
-                }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ 
-                  type: 'spring',
-                  stiffness: 75,
-                  damping: 15,
-                  mass: 0.95,
-                  delay: index * 0.05
-                }}
-                style={{ transformStyle: 'preserve-3d', transformPerspective: 1200 }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute top-10 right-2 w-[220px] bg-neutral-950 border border-neutral-800 rounded-2xl p-4.5 font-mono text-[9px] text-zinc-400 shadow-xl opacity-40 scale-95"
               >
-                <div
-                  onMouseMove={(e) => handleTilt(e, index + 1)}
-                  onMouseLeave={() => resetTilt(index + 1)}
-                  className="bg-white border border-zinc-200/90 hover:border-amber rounded-2xl md:rounded-3xl p-8 md:p-12 flex flex-col-reverse lg:flex-row items-stretch justify-between gap-10 md:gap-14 transition-all duration-300 group shadow-[0_8px_30px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(234,88,12,0.06)] relative overflow-visible"
-                  style={{
-                    transform: isExpanded ? 'none' : `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-                    transition: isExpanded ? 'border-color 0.3s, background-color 0.3s' : 'border-color 0.3s, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s, box-shadow 0.3s',
-                  }}
-                >
-                  {/* Decorative faint background glow */}
-                  <div className="absolute top-0 right-0 w-80 h-80 bg-radial-[circle,rgba(234,88,12,0.02)_0%,rgba(0,0,0,0)_70%] pointer-events-none" />
+                <div className="flex gap-1 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-red-500/60" />
+                  <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+                  <div className="w-2 h-2 rounded-full bg-green-500/60" />
+                </div>
+                <p className="text-emerald-400"># pac_ledger initialized</p>
+                <p className="text-[#FF6B00]/70">$ encrypt --drift-c-bindings</p>
+                <p className="text-zinc-500 text-[8px] mt-1.5 font-sans">
+                  {"[OK] Drift SQLite: 100% thread isolations."}
+                </p>
+              </motion.div>
 
-                  {/* Left Side: Info (60%) */}
-                  <div className="w-full lg:w-[60%] flex flex-col justify-between items-start gap-8">
-                    <div className="flex flex-col items-start gap-4 w-full">
-                      <div className="flex items-center gap-4.5">
-                        <span className="text-4xl filter drop-shadow-md">{app.icon}</span>
-                        <h3 className="font-syne font-black text-3xl sm:text-4xl text-zinc-950 tracking-tight group-hover:text-amber transition-colors duration-300">
-                          {app.name}
-                        </h3>
-                      </div>
-                      
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-mono tracking-widest font-extrabold shadow-sm ${getFeaturedStatusStyle(app.status)}`}>
-                        {app.status}
-                      </span>
-                      
-                      <p className="font-sans text-zinc-650 text-base sm:text-lg leading-relaxed mt-2.5">
-                        {app.description}
-                      </p>
-                    </div>
-
-                    <div className="w-full flex flex-col gap-6">
-                      {/* Collapsible Tech Specifications Section for Home Cards */}
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.35, ease: 'easeOut' }}
-                            className="overflow-hidden border-t border-dashed border-zinc-200 pt-6 mt-3"
-                          >
-                            <h4 className="font-syne font-bold text-xs uppercase tracking-wider text-amber-700 mb-4 flex items-center gap-2">
-                              <Sparkles size={12} className="text-amber" />
-                              Technical Spec Integration Details
-                            </h4>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-zinc-600 font-sans">
-                              <div className="bg-zinc-50 border border-zinc-200/50 p-3.5 rounded-xl">
-                                <span className="block font-semibold text-zinc-400 text-[10px] uppercase font-mono tracking-wider mb-1">Local Client Persistence</span>
-                                <span className="font-mono font-bold text-zinc-800">{spec.database}</span>
-                              </div>
-                              <div className="bg-zinc-50 border border-zinc-200/50 p-3.5 rounded-xl">
-                                <span className="block font-semibold text-zinc-400 text-[10px] uppercase font-mono tracking-wider mb-1">On-Device Autonomy</span>
-                                <span className="font-mono font-bold text-zinc-800 text-amber">{spec.autonomy}</span>
-                              </div>
-                              <div className="bg-zinc-50 border border-zinc-200/50 p-3.5 rounded-xl">
-                                <span className="block font-semibold text-zinc-400 text-[10px] uppercase font-mono tracking-wider mb-1">Security & Sync Syncing</span>
-                                <span className="font-sans text-zinc-700 font-semibold">{spec.sync}</span>
-                              </div>
-                              <div className="bg-zinc-50 border border-zinc-200/50 p-3.5 rounded-xl">
-                                <span className="block font-semibold text-zinc-400 text-[10px] uppercase font-mono tracking-wider mb-1">Custom Architecture Achievement</span>
-                                <span className="font-sans text-zinc-700 font-semibold">{spec.noteworthy}</span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Stack Tags */}
-                      <div className="flex flex-wrap gap-2 pt-2 relative z-20">
-                        {app.tags.map(tag => (
-                          <TechTag key={tag} tag={tag} />
-                        ))}
-                      </div>
-
-                      {/* Action Row */}
-                      <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-zinc-100">
-                        {/* PlayStore Button */}
-                        {app.playStoreUrl && (
-                          <a
-                            href={app.playStoreUrl}
-                            target="_blank"
-                            rel="no-referrer noreferrer"
-                            className="bg-zinc-950 hover:bg-zinc-850 hover:scale-[1.02] border border-zinc-950 text-xs font-bold px-6 py-3 rounded-full text-white flex items-center gap-2 transition-all duration-300 shadow-md select-text"
-                          >
-                            <span>Google Play Store</span>
-                            <ArrowRight size={13} className="text-amber" />
-                          </a>
-                        )}
-
-                        <button
-                          onClick={() => toggleFeaturedAppSpecs(app.id)}
-                          className="flex items-center gap-1.5 text-xs font-mono tracking-wider font-extrabold text-zinc-500 hover:text-amber transition-colors duration-200 cursor-pointer py-2 px-1 rounded-lg"
-                        >
-                          <span>{isExpanded ? '[- CLOSE TECH ARCHITECTURE]' : '[+ OPEN TECH ARCHITECTURE]'}</span>
-                          {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Side: Mock Visual placeholder gradient (40%) */}
-                  <div className="w-full lg:w-[36%] min-h-[220px] lg:min-h-auto rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50/40 to-white border border-zinc-200 flex items-center justify-center relative overflow-hidden group-hover:border-amber/30 transition-all duration-500">
-                    <div className="absolute inset-0 bg-radial-[circle,rgba(234,88,12,0.06)_0%,rgba(0,0,0,0)_60%] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    <div className="text-8xl group-hover:scale-115 group-hover:rotate-6 transition-transform duration-500 ease-out select-none filter drop-shadow-[0_15px_15px_rgba(234,88,12,0.15)]">
-                      {app.icon}
-                    </div>
+              {/* Side Card representing BtwUs screen */}
+              <motion.div
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                className="absolute bottom-12 left-4 w-[230px] bg-white border border-zinc-150 rounded-2xl p-5 shadow-lg relative z-20 scale-95 hover:border-[#FF6B00]/30 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2 border-b border-zinc-100 pb-2 mb-3">
+                  <Heart className="text-red-500 fill-red-500" size={13} />
+                  <span className="font-syne font-black text-xs text-[#111111]">BtwUs Vault</span>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-2 w-28 bg-zinc-200 rounded" />
+                  <div className="h-1.5 w-16 bg-zinc-100 rounded" />
+                  <div className="h-5 w-full bg-[#FF6B00]/5 border border-[#FF6B00]/10 rounded-lg mt-1 flex items-center justify-between px-2 text-[8px] font-mono text-[#FF6B00] font-bold">
+                    <span>SECURE DIRECT CODES</span>
+                    <span>ACTIVE</span>
                   </div>
                 </div>
               </motion.div>
-            );
-          })}
-        </div>
+            </div>
 
-        <div className="w-full flex items-center justify-center mt-16 md:mt-20">
-          <Link
-            to="/apps"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2.5 text-amber hover:text-orange-600 font-syne font-black text-xl transition-colors group cursor-pointer"
-          >
-            <span>View Complete Production Sandbox</span>
-            <ArrowRight size={22} className="group-hover:translate-x-1.5 transition-transform duration-200 text-amber" />
-          </Link>
+            {/* Central Master Phone Component */}
+            <div className="relative z-10 w-full h-[450px] sm:h-[550px] flex items-center justify-center">
+              <FloatingPhone />
+            </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.header>
 
-      {/* 4. BRAND NEW SECTION: THE LIVE CLIENT-SIDE PLAYGROUND BOX */}
-      <section className="py-24 md:py-32 px-6 max-w-7xl mx-auto border-t border-zinc-200/80 relative z-10 select-none bg-zinc-50/50 rounded-3xl mb-12 border border-zinc-100">
-        
-        {/* Interactive Sandbox Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16 px-4">
-          <div className="flex flex-col items-start gap-2 max-w-2xl">
-            <span className="text-amber text-[10px] font-bold tracking-[0.3em] uppercase bg-amber-dim px-3.5 py-1.5 rounded-full border border-amber/15 shadow-sm">
-              LIVE APP PLAYGROUND CONSOLE
-            </span>
-            <h2 className="font-syne font-black text-4xl sm:text-5.5xl text-zinc-950 tracking-tight leading-none mt-2">
-              Run Local Database Syncs
-            </h2>
-            <p className="font-sans text-zinc-600 text-base leading-relaxed mt-4">
-              All my applications are 100% cloud-autonomous, meaning database triggers execute in binary memory or local SQLite binding. 
-              Click the selectors below to interact with simulated client states and review compilation queries live!
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-mono bg-white border border-zinc-200 p-3 rounded-xl shadow-sm self-start shrink-0">
-            <Activity className="text-amber animate-pulse" size={14} />
-            <span className="text-zinc-600">Client Engine Status: Active sandbox</span>
-          </div>
-        </div>
 
-        {/* Console layout row */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-2">
+      {/* ###################################
+          2. IMPACT SECTION (Large metrics, visually impactful large typography)
+          ################################### */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={sectionVariants}
+        className="py-24 sm:py-32 bg-[#FAFAFA] border-y border-zinc-100 select-none z-10 relative"
+      >
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
           
-          {/* List of tabs: Left 4 cols */}
-          <div className="lg:col-span-4 flex flex-col gap-3.5">
-            {[
-              { id: 'pactora', name: 'Pactora SQLite Ledger', desc: 'Secure promise ledger utilizing Drift offline C-bindings.', badge: 'O-N SECURE', icon: '🤝' },
-              { id: 'btwus', name: 'BtwUs Crypt Vault', desc: 'Symmetric encryptions to record private anniversary milestones.', badge: 'AES-256', icon: '💑' },
-              { id: 'gullycricket', name: 'Gully Cricket Scoring', desc: 'Hive direct byte buffers and dynamic scoreboard layers.', badge: '120HZ COMPLIANT', icon: '🏏' }
-            ].map(tab => {
-              const isActive = activePlaygroundTab === tab.id;
+          <motion.div variants={itemVariants} className="flex flex-col items-start gap-4 mb-16">
+            <span className="text-[#FF6B00] text-[11px] font-mono font-bold tracking-widest uppercase">
+              // VERIFIED DEPLOYMENT METRICS
+            </span>
+            <p className="font-sans text-[#666666] text-sm sm:text-base max-w-lg mt-1 leading-relaxed">
+              Skip traditional resume metrics. These numbers represent raw production environments, national accomplishments, and direct community ownership.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 md:gap-8 items-start">
+            
+            {/* Stat Row 1 */}
+            <motion.div variants={itemVariants} className="flex flex-col items-start gap-2.5">
+              <span className="font-syne font-extrabold text-[#111111] text-6xl sm:text-7xl leading-none tracking-tighter">
+                15K+
+              </span>
+              <div className="h-[2px] w-12 bg-[#FF6B00] rounded-full my-1" />
+              <span className="font-sans text-[#111111] text-base font-extrabold mt-1">
+                Active User Interactions
+              </span>
+              <span className="text-xs text-[#666666]">
+                Verifiable event logs across dynamic playstore applications.
+              </span>
+            </motion.div>
+
+            {/* Stat Row 2 */}
+            <motion.div variants={itemVariants} className="flex flex-col items-start gap-2.5">
+              <span className="font-syne font-extrabold text-[#111111] text-6xl sm:text-7xl leading-none tracking-tighter">
+                6+
+              </span>
+              <div className="h-[2px] w-12 bg-[#FF6B00] rounded-full my-1" />
+              <span className="font-sans text-[#111111] text-base font-extrabold mt-1">
+                Completed Production Apps
+              </span>
+              <span className="text-xs text-[#666666]">
+                Shipped, reviewed, and approved on Google Play Store console.
+              </span>
+            </motion.div>
+
+            {/* Stat Row 3 */}
+            <motion.div variants={itemVariants} className="flex flex-col items-start gap-2.5">
+              <span className="font-syne font-extrabold text-[#111111] text-6xl sm:text-7xl leading-none tracking-tighter">
+                Google
+              </span>
+              <div className="h-[2px] w-12 bg-[#FF6B00] rounded-full my-1" />
+              <span className="font-sans text-[#111111] text-base font-extrabold mt-1">
+                Gemini Campus Ambassador
+              </span>
+              <span className="text-xs text-[#666666]">
+                Selected ambassador leading artificial intelligence integrations.
+              </span>
+            </motion.div>
+
+            {/* Stat Row 4 */}
+            <motion.div variants={itemVariants} className="flex flex-col items-start gap-2.5">
+              <span className="font-syne font-extrabold text-[#111111] text-6xl sm:text-7xl leading-none tracking-tighter">
+                Gold
+              </span>
+              <div className="h-[2px] w-12 bg-[#FF6B00] rounded-full my-1" />
+              <span className="font-sans text-[#111111] text-base font-extrabold mt-1">
+                National Hackathon Winner
+              </span>
+              <span className="text-xs text-[#666666]">
+                First place recognition for outstanding local-first tool architectures.
+              </span>
+            </motion.div>
+
+          </div>
+        </div>
+      </motion.section>
+
+
+      {/* ###################################
+          3. FEATURED PRODUCTS (Most important section, Apple product pages flavor)
+          ################################### */}
+      <motion.section
+        id="featured-products"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={sectionVariants}
+        className="py-28 sm:py-36 bg-white z-10 relative"
+      >
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          
+          {/* Header block with elegant spacing and line */}
+          <motion.div variants={itemVariants} className="flex flex-col items-start gap-3.5 mb-24 md:mb-32">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              PRODUCT GALLERY
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 max-w-2xl leading-[1.05]">
+              Featured Applications
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base max-w-md mt-1 leading-relaxed">
+              Each product is natively compiled, completely autonomous, and custom engineered to deliver pure utility.
+            </p>
+          </motion.div>
+
+          <div className="flex flex-col gap-36 sm:gap-44 relative">
+            {featuredProducts.map((app, index) => {
+              const isEven = index % 2 === 0;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActivePlaygroundTab(tab.id as any)}
-                  className={`w-full text-left p-6 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col gap-2 relative ${
-                    isActive 
-                      ? 'bg-white border-amber shadow-[0_10px_25px_rgba(234,88,12,0.05)] translate-x-1.5' 
-                      : 'bg-white/40 border-zinc-200/60 hover:bg-white hover:border-zinc-300'
-                  }`}
+                <motion.div 
+                  key={app.id}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-100px" }}
+                  variants={sectionVariants}
+                  className={`grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center`}
                 >
-                  {/* Selection Glow Indicator bar */}
-                  {isActive && <div className="absolute left-0 top-6 bottom-6 w-1 bg-amber rounded-r-md" />}
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-syne font-black text-zinc-900 group-hover:text-amber flex items-center gap-2">
-                      <span className="text-lg">{tab.icon}</span>
-                      {tab.name}
-                    </span>
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-dim px-2 rounded-full border border-amber/10">{tab.badge}</span>
-                  </div>
-                  <p className="font-sans text-xs text-zinc-500 leading-relaxed">{tab.desc}</p>
-                </button>
+                  {/* TEXT CONTENT COLUMN: isEven ? col-span-5 : col-span-5 order-last */}
+                  <motion.div 
+                    variants={itemVariants}
+                    className={`lg:col-span-5 flex flex-col gap-6 sm:gap-8 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}
+                  >
+                    
+                    {/* Status Badge */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl filter drop-shadow-sm">{app.icon}</span>
+                      <div>
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FF6B00]">
+                          {app.status === 'HACKATHON_WINNER' ? '🏆 National Winner' : `🛠️ ${app.status}`}
+                        </span>
+                        <h3 className="font-syne font-extrabold text-2xl sm:text-3.5xl text-[#111111] tracking-tight leading-none mt-1">
+                          {app.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <p className="font-sans text-[#111111] text-lg sm:text-xl font-medium tracking-tight -mt-2 leading-relaxed">
+                      "{app.tagline}"
+                    </p>
+
+                    <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed">
+                      {app.description}
+                    </p>
+
+                    {/* Features bullet list */}
+                    <ul className="space-y-3 font-sans text-sm text-[#111111] border-l border-[#FF6B00]/30 pl-4 py-1">
+                      {app.features.map((feat, i) => (
+                        <li key={i} className="flex items-start gap-2.5">
+                          <CheckCircle className="text-[#FF6B00] shrink-0 mt-0.5" size={14} />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Technology Stack tags */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {app.techStack.map(tech => (
+                        <span key={tech} className="bg-[#FAFAFA] border border-zinc-200/90 text-zinc-650 font-mono text-[9px] font-bold px-3 py-1 rounded-full uppercase">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* App Specs Row */}
+                    <div className="grid grid-cols-2 gap-3.5 border-t border-zinc-100 pt-6 text-xs font-sans">
+                      <div>
+                        <span className="block font-semibold text-[#666666] text-[10px] uppercase font-mono tracking-wider mb-0.5">Persistence</span>
+                        <span className="font-mono font-bold text-[#111111]">{app.specs.database}</span>
+                      </div>
+                      <div>
+                        <span className="block font-semibold text-[#666666] text-[10px] uppercase font-mono tracking-wider mb-0.5">Isolation Level</span>
+                        <span className="font-mono font-bold text-[#FF6B00]">{app.specs.isolation}</span>
+                      </div>
+                    </div>
+
+                    {/* Button row */}
+                    <div className="flex items-center gap-4 pt-4 border-t border-zinc-100">
+                      {app.playStoreUrl ? (
+                        <a 
+                          href={app.playStoreUrl}
+                          target="_blank"
+                          rel="noreferrer referrer"
+                          className="px-6 py-3 bg-[#111111] hover:bg-[#FF6B00] text-white text-xs font-bold rounded-full flex items-center gap-2 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.02)]"
+                        >
+                          <Smartphone size={13} />
+                          <span>Download Play Store</span>
+                          <ArrowRight size={12} className="text-[#FF6B00]" />
+                        </a>
+                      ) : (
+                        <span className="text-xs font-mono font-bold text-zinc-400 bg-zinc-50 border border-zinc-150 px-4 py-2.5 rounded-full select-none cursor-not-allowed">
+                          🔒 In stealth development
+                        </span>
+                      )}
+
+                      <a 
+                        href="#architecture-showcase" 
+                        className="text-xs font-mono font-bold text-[#666666] hover:text-[#111111] transition-colors py-2 px-1 flex items-center gap-1"
+                      >
+                        <span>[View Engine Architecture]</span>
+                        <ChevronRight size={12} />
+                      </a>
+                    </div>
+                  </motion.div>
+
+                  {/* VISUAL DEVICE COLUMN: isEven ? col-span-7 : col-span-7 order-first */}
+                  <motion.div 
+                    variants={itemVariants}
+                    className={`lg:col-span-7 flex justify-center items-center ${isEven ? 'lg:order-2' : 'lg:order-1'}`}
+                  >
+                    {/* Visual Card mimicking Apple Product visuals */}
+                    <div className="w-full min-h-[300px] sm:min-h-[440px] rounded-3xl bg-[#FAFAFA] border border-zinc-150 relative overflow-hidden group hover:border-[#FF6B00]/25 hover:shadow-[0_16px_50px_rgba(0,0,0,0.02)] transition-all duration-500 flex flex-col justify-between p-8 sm:p-12">
+                      <div className="flex justify-between items-start">
+                        <span className="font-mono text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">PROJECT SCREENSHOT OUTLINE</span>
+                        <span className="font-mono text-[9px] bg-white border border-zinc-200 px-2.5 py-1 rounded text-zinc-500 font-bold leading-none">SECURE KEY #{(index + 1) * 31}</span>
+                      </div>
+
+                      {/* Displaying large premium visual representation of the app inside */}
+                      <div className="my-auto py-12 flex flex-col items-center justify-center relative">
+                        {/* Radial glowing halo background */}
+                        <div className="absolute inset-0 bg-radial-[circle,rgba(255,107,0,0.045)_0%,rgba(0,0,0,0)_65%] blur-2xl rounded-full" />
+
+                        {/* Interactive floating elements inside */}
+                        <motion.div
+                          whileHover={{ scale: 1.05, rotate: isEven ? 2 : -2 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                          className="w-[180px] sm:w-[220px] bg-white border border-zinc-150 p-4.5 rounded-2xl shadow-xl z-10 flex flex-col gap-3 cursor-pointer"
+                        >
+                          <div className="h-2 w-14 bg-[#FF6B00] rounded-sm" />
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">{app.icon}</span>
+                            <span className="font-syne font-black text-sm text-[#111111]">{app.name}</span>
+                          </div>
+                          
+                          <div className="space-y-1.5 text-[9px] font-mono text-[#666666]">
+                            <div className="bg-[#FAFAFA] px-2 py-1.5 rounded flex items-center justify-between border border-zinc-150">
+                              <span>SQL LATENCY</span>
+                              <span className="text-green-600 font-bold">0.05 ms</span>
+                            </div>
+                            <div className="bg-[#FAFAFA] px-2 py-1.5 rounded flex items-center justify-between border border-zinc-150">
+                              <span>REMOTE SYNC</span>
+                              <span className="text-zinc-500 font-bold">Isolated</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      <div className="flex items-center justify-between font-mono text-[9px] text-[#666666]">
+                        <span>© {app.name} System.</span>
+                        <span className="text-[#FF6B00] font-bold">DEVICE SIMULATOR ACTIVE</span>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                </motion.div>
               );
             })}
           </div>
 
-          {/* Interactive Screen Simulator: Middle 4 cols */}
-          <div className="lg:col-span-4 flex items-center justify-center">
-            
-            {/* Visual Phone border chassis */}
-            <div className="w-[290px] h-[480px] bg-zinc-950 rounded-[44px] p-3 border-4 border-zinc-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.12)] relative overflow-hidden flex flex-col select-none">
-              
-              {/* Camera Notch island */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-20 h-5 bg-black rounded-full z-30 flex items-center justify-between px-2.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-900/80"></span>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-950/40"></span>
-              </div>
+        </div>
+      </motion.section>
 
-              {/* Front UI container */}
-              <div className="flex-1 rounded-[32px] bg-zinc-900 text-white p-4 pt-8 overflow-y-auto font-sans relative z-10 select-none scrollbar-none flex flex-col justify-between">
-                
-                {/* Simulated Screen Dynamic Routing Render */}
+
+      {/* ###################################
+          4. PRODUCT CASE STUDIES (Problem, Solution, Architecture, Impact, Visual Storytelling)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-[#FAFAFA] border-y border-zinc-100 z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          
+          <div className="flex flex-col items-start gap-3 mb-20">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              CASE ARCHIVES
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 max-w-2xl leading-[1.05]">
+              Product Case Studies
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base max-w-lg mt-1 leading-relaxed">
+              Why each product exists. Not just code — product execution, customer alignment, and architecture justification.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
+            {featuredProducts.map(app => (
+              <div 
+                key={app.id} 
+                className="bg-white border border-zinc-200 p-8 sm:p-10 rounded-3xl hover:border-[#FF6B00] hover:shadow-[0_12px_45px_rgba(0,0,0,0.015)] transition-all duration-300 flex flex-col justify-between gap-8 h-full"
+              >
                 <div>
-                  
-                  {/* APP TARGET NAME BAR */}
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
-                    <span className="text-[10px] uppercase tracking-widest font-mono text-zinc-500 font-bold">
-                      {activePlaygroundTab === 'pactora' ? 'Pactora DB' : activePlaygroundTab === 'btwus' ? 'BtwUs Crypt' : 'Gully Live'}
-                    </span>
-                    <span className="text-[10px] font-mono text-green-400">● Isolated</span>
+                  <div className="flex items-center gap-3 border-b border-zinc-100 pb-5 mb-6">
+                    <span className="text-3xl">{app.icon}</span>
+                    <div>
+                      <h4 className="font-syne font-extrabold text-[#111111] text-lg sm:text-xl tracking-tight leading-none">
+                        {app.name} Analysis
+                      </h4>
+                      <span className="text-[10px] font-mono text-[#666666] uppercase tracking-wider block mt-1">PRODUCT LIFE CYCLE STUDY</span>
+                    </div>
                   </div>
 
-                  {/* 1. Pactora Ledger UI Screen */}
-                  {activePlaygroundTab === 'pactora' && (
-                    <div className="space-y-3 animate-fade-in text-xs">
-                      <h4 className="font-syne font-bold text-white text-sm mb-1">On-Device Promise Log</h4>
-                      <p className="text-zinc-500 text-[10px]">Unbroken records inside app isolated index:</p>
-                      
-                      <div className="space-y-2">
-                        {pactoraPromises.map(p => (
-                          <div 
-                            key={p.id}
-                            onClick={() => handleTogglePactoraPromise(p.id, p.title)}
-                            className={`p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                              p.kept 
-                                ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-300' 
-                                : 'bg-zinc-800/50 border-zinc-700/80 text-zinc-300 hover:bg-zinc-800'
-                            }`}
-                          >
-                            <span className="max-w-[75%] truncate leading-snug">{p.title}</span>
-                            {p.kept ? (
-                              <span className="font-mono text-[9px] bg-emerald-900 px-1.5 py-0.5 rounded text-emerald-200">Kept</span>
-                            ) : (
-                              <span className="font-mono text-[9px] bg-zinc-700 px-1.5 py-0.5 rounded text-zinc-400">Wait</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      <button 
-                        onClick={handleAddPactoraPromise}
-                        className="w-full bg-amber hover:bg-amber-glow text-white text-[10px] font-mono font-bold py-2 rounded-lg mt-3 text-center cursor-pointer transition-all shadow"
-                      >
-                        + Create Random Commitment
-                      </button>
+                  <div className="space-y-6 font-sans text-sm">
+                    {/* Problem */}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-red-500">THE PROBLEM TO RESOLVE</span>
+                      <p className="text-[#666666] leading-relaxed select-text">{app.caseStudy.problem}</p>
                     </div>
-                  )}
 
-                  {/* 2. BtwUs Vault Memory UI */}
-                  {activePlaygroundTab === 'btwus' && (
-                    <div className="space-y-3 animate-fade-in text-xs">
-                      <h4 className="font-syne font-bold text-white text-sm mb-1 flex items-center gap-1">
-                        <Heart className="text-pink-500 fill-pink-500 animate-pulse" size={13} />
-                        Romantic Vault Entries
-                      </h4>
-                      <p className="text-zinc-500 text-[10px]">Symmetric local AES memory array:</p>
-                      
-                      <div className="space-y-2">
-                        {btwusMilestones.map(m => (
-                          <div 
-                            key={m.id}
-                            className="bg-purple-950/30 border border-purple-900/50 p-2.5 rounded-xl flex flex-col gap-0.5 relative overflow-hidden"
-                          >
-                            <span className="font-semibold text-purple-200 truncate pr-8 leading-snug">{m.title}</span>
-                            <span className="text-[9px] text-purple-400 font-mono italic">{m.date}</span>
-                            <Shield className="absolute right-2.5 top-1/2 -translate-y-1/2 text-purple-500/30" size={12} />
-                          </div>
-                        ))}
-                      </div>
-
-                      <button 
-                        onClick={handleAddBtwMilestone}
-                        className="w-full bg-purple-700 hover:bg-purple-600 text-white text-[10px] font-mono font-bold py-2 rounded-lg mt-4 text-center cursor-pointer transition-all shadow"
-                      >
-                        + Crypt new Anniversary Note
-                      </button>
+                    {/* Solution */}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-green-600">THE RESOLVED PATHWAY</span>
+                      <p className="text-[#111111] leading-relaxed select-text">{app.caseStudy.solution}</p>
                     </div>
-                  )}
 
-                  {/* 3. Gully Cricket UI Screen */}
-                  {activePlaygroundTab === 'gullycricket' && (
-                    <div className="space-y-3 animate-fade-in text-xs">
-                      <h4 className="font-syne font-bold text-white text-sm mb-1">Gully Match Overlay</h4>
-                      
-                      {/* Interactive score widget */}
-                      <div className="bg-zinc-800 border border-zinc-700 p-3 rounded-xl flex flex-col items-center gap-1.5 text-center my-2">
-                        <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">MOCK CRICKET BOARD</span>
-                        <div className="text-2xl font-mono font-black text-amber">
-                          {cricketScore.runs} <span className="text-zinc-400 text-lg">/ {cricketScore.wickets}</span>
-                        </div>
-                        <span className="text-[9px] text-zinc-500 font-mono font-semibold">({cricketScore.balls} Balls Bowls • Rate: {cricketScore.balls > 0 ? ((cricketScore.runs * 6) / cricketScore.balls).toFixed(1) : '0.0'})</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 mt-4">
-                        <button 
-                          onClick={() => handleScoreCricket(4)}
-                          className="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-mono leading-none py-2 rounded"
-                        >
-                          +4 Runs
-                        </button>
-                        <button 
-                          onClick={() => handleScoreCricket(6)}
-                          className="bg-indigo-700 hover:bg-indigo-600 text-white text-[10px] font-mono leading-none py-2 rounded"
-                        >
-                          +6 Runs
-                        </button>
-                        <button 
-                          onClick={handleWicketCricket}
-                          className="bg-red-700 hover:bg-red-600 text-white text-[10px] font-mono leading-none py-2 rounded"
-                        >
-                          Bowl Out!
-                        </button>
-                        <button 
-                          onClick={handleResetCricket}
-                          className="bg-zinc-700 hover:bg-zinc-600 text-white text-[10px] font-mono leading-none py-2 rounded"
-                        >
-                          Reset Board
-                        </button>
-                      </div>
+                    {/* Architecture */}
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-[#FF6B00]">THE TECHNICAL LAYOUT</span>
+                      <p className="text-[#666666] leading-relaxed select-text">{app.caseStudy.architecture}</p>
                     </div>
-                  )}
-
+                  </div>
                 </div>
 
-                {/* Bottom status display */}
-                <div className="pt-2 border-t border-zinc-800 text-[9px] text-zinc-600 flex items-center justify-between font-mono">
-                  <span>Battery State: Safe</span>
-                  <span>100% Offline</span>
+                <div className="bg-[#FAFAFA] border border-zinc-150 rounded-2xl p-4.5 flex flex-col gap-1 text-xs">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-[#666666]">VERIFIABLE FIELD IMPACT</span>
+                  <p className="font-sans text-[#111111] leading-normal font-medium mt-0.5 select-text">{app.caseStudy.impact}</p>
                 </div>
-
               </div>
-
-              {/* Ambient device bottom slot */}
-              <div className="w-16 h-1 bg-zinc-800 rounded-full mx-auto my-1 absolute bottom-1.5 left-1/2 -translate-x-1/2"></div>
-            </div>
-
+            ))}
           </div>
 
-          {/* Code Log Terminal Output Viewer: Right 4 cols */}
-          <div className="lg:col-span-4 flex flex-col border border-zinc-800 rounded-3xl bg-zinc-950 p-6 font-mono text-xs text-zinc-400 shadow-xl relative overflow-hidden">
+        </div>
+      </section>
+
+
+      {/* ###################################
+          5. DEVELOPMENT PHILOSOPHY (How I Build Software)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-white z-10 relative">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-center flex flex-col items-center">
+          
+          <div className="flex flex-col items-center gap-3.5 mb-24 max-w-xl text-center">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-4 py-1.5 rounded-full">
+              PHILOSOPHER DECK
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 leading-[1.05]">
+              How I Build Software
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed mt-2.5">
+              Production engineering requires persistent paradigms to prevent system bloat. This list forms Sourabh's architectural criteria.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6 text-left max-w-[1250px]">
+            {[
+              {
+                title: 'Privacy First',
+                icon: <Lock size={20} className="text-[#FF6B00]" />,
+                desc: 'User databases remain wrapped within native on-device keys, blocking analytics trackers and cloud interception completely.'
+              },
+              {
+                title: 'Offline First',
+                icon: <Database size={20} className="text-[#FF6B00]" />,
+                desc: 'All processes, logs, scoreboards, and ledger triggers write directly to local storage disks prior to seeking network channels.'
+              },
+              {
+                title: 'Performance First',
+                icon: <Zap size={20} className="text-[#FF6B00]" />,
+                desc: 'Threading isolates handle database disk IO outside the main rendering thread to sustain locked 120Hz smooth frames.'
+              },
+              {
+                title: 'Scalable Architecture',
+                icon: <Server size={20} className="text-[#FF6B00]" />,
+                desc: 'Constructing robust Riverpod states and modular micro-packages to transition from single sandboxes to thousands of active users.'
+              },
+              {
+                title: 'User-Centric Design',
+                icon: <Smartphone size={20} className="text-[#FF6B00]" />,
+                desc: 'Rejecting standard low-end layouts. Every screen uses spacious layout pacing, visual rhythm, and micro-hover responses.'
+              }
+            ].map((p, i) => (
+              <div 
+                key={i}
+                className="bg-[#FAFAFA] border border-zinc-150 p-8 rounded-2.5xl hover:border-[#FF6B00] hover:bg-white hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between gap-6"
+              >
+                <div className="w-11 h-11 bg-white border border-zinc-200 rounded-xl flex items-center justify-center shadow-sm">
+                  {p.icon}
+                </div>
+                <div>
+                  <h3 className="font-syne font-extrabold text-base sm:text-lg text-[#111111] tracking-tight">
+                    {p.title}
+                  </h3>
+                  <p className="font-sans text-[#666666] text-xs sm:text-[13px] leading-relaxed mt-2.5">
+                    {p.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ###################################
+          6. ARCHITECTURE SHOWCASE (Signature Section - animated / interactive diagrams)
+          ################################### */}
+      <section id="architecture-showcase" className="py-28 sm:py-36 bg-[#FAFAFA] border-y border-zinc-100 z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             
-            {/* Header tab */}
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3.5 mb-4">
-              <span className="font-bold text-amber text-[10px] tracking-wider uppercase flex items-center gap-1.5">
-                <Terminal size={12} className="text-amber-600 animate-pulse" />
-                Live Client Stream Logs
+            {/* Left explanation text */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full self-start">
+                SIGNATURE INFRASTRUCTURE
               </span>
-              <span className="text-[9px] text-zinc-600">Local-first diagnostics</span>
+              <h2 className="font-syne font-extrabold text-4xl sm:text-5 text-[#111111] tracking-tight max-w-md leading-none">
+                Architecture Blueprint
+              </h2>
+              <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed">
+                Click across the main components of Sourabh's architecture stack to visualize how local SQLite, Riverpod signals, and Gemini models synchronize instantly on client devices without central bottlenecks.
+              </p>
+
+              {/* Diagram Tabs */}
+              <div className="flex flex-col gap-2 pt-2">
+                {[
+                  { id: 'flow', name: 'Offline Data Flow', desc: 'Secure local serialization pipeline' },
+                  { id: 'riverpod', name: 'Riverpod State flow', desc: 'Sustained signal flow reactive logs' },
+                  { id: 'sqlite', name: 'SQLite DB Layer', desc: 'Frictionless embedded Drift SQL' },
+                  { id: 'ai', name: 'AI Client Integrations', desc: 'Secure local semantic model keys' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveArchTab(tab.id as any)}
+                    className={`w-full text-left p-4.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1 relative ${
+                      activeArchTab === tab.id 
+                        ? 'bg-white border-[#FF6B00] shadow-sm font-semibold' 
+                        : 'bg-white/40 border-zinc-200/50 hover:bg-white hover:border-zinc-300'
+                    }`}
+                  >
+                    {activeArchTab === tab.id && <div className="absolute left-0 top-3 bottom-3 w-1 bg-[#FF6B00] rounded-r" />}
+                    <span className="text-xs font-syne font-black text-[#111111]">{tab.name}</span>
+                    <span className="text-[10px] text-[#666666] font-sans">{tab.desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Simulated scroll list */}
-            <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[350px] leading-relaxed scrollbar-none">
-              <AnimatePresence initial={false}>
-                {playgroundLogs.map((log) => {
-                  let badgeColor = 'text-amber';
-                  if (log.type === 'db') badgeColor = 'text-green-400';
-                  if (log.type === 'system') badgeColor = 'text-blue-400';
+            {/* Right interactive visual diagram area */}
+            {activeArchTab === 'flow' ? (
+              <div className="lg:col-span-7 flex flex-col justify-between">
+                <InteractiveArchitecture />
+              </div>
+            ) : (
+              <div className="lg:col-span-7 bg-white border border-zinc-200 p-8 sm:p-10 rounded-3xl min-h-[460px] flex flex-col justify-between relative shadow-[0_4px_30px_rgba(0,0,0,0.01)] overflow-hidden">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-6 text-xs font-mono">
+                  <span className="font-bold text-[#FF6B00]">DIAGRAM // ACTIVE RENDER MODE</span>
+                  <span className="text-[#666666]">RENDERER: V1.01 (SPRING)</span>
+                </div>
+
+                {/* Dynamic Render block with SVG shapes animation */}
+                <div className="flex-1 flex items-center justify-center relative min-h-[280px]">
                   
-                  return (
-                    <motion.div 
-                      key={log.id} 
-                      initial={{ opacity: 0, x: 10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-[11px] border-b border-zinc-900/60 pb-1.5 last:border-0 select-text"
-                    >
-                      <span className={`${badgeColor} font-bold mr-1.5`}>
-                        {log.type === 'db' ? '└─[SQL]' : log.type === 'system' ? '└─[SYS]' : '└─[ACT]'}
-                      </span>
-                      <span className="text-zinc-300 font-mono">{log.text}</span>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
+                  <AnimatePresence mode="wait">
+                    {activeArchTab === 'riverpod' && (
+                      <motion.div
+                        key="riverpod"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full flex flex-col items-center gap-5"
+                      >
+                        <div className="relative w-48 h-48 bg-zinc-50 border border-zinc-200 rounded-full flex items-center justify-center">
+                          <motion.div 
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                            className="absolute inset-2 border border-dashed border-[#FF6B00]/40 rounded-full"
+                          />
+                          <div className="z-10 text-center flex flex-col items-center gap-1 bg-white p-3.5 rounded-xl shadow-md border border-zinc-150">
+                            <Cpu size={18} className="text-[#FF6B00]" />
+                            <span className="font-mono font-bold text-[9px] text-[#111111]">STATE NOTIFIER</span>
+                          </div>
+                        </div>
+                        <span className="font-sans text-xs text-center text-[#666666] max-w-sm">
+                          Riverpod providers broadcast mutation events immediately. Main lists listen to state updates without rebuild flickers.
+                        </span>
+                      </motion.div>
+                    )}
 
-            {/* Clear button */}
-            <button
-              onClick={() => setPlaygroundLogs([{ id: 'init', text: 'System logs flushed securely.', type: 'system' }])}
-              className="text-right text-[10px] text-zinc-600 hover:text-amber cursor-pointer mt-4 transition-colors font-mono uppercase"
-            >
-              [ Flush Logs Cache ]
-            </button>
+                    {activeArchTab === 'sqlite' && (
+                      <motion.div
+                        key="sqlite"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full flex flex-col items-center gap-4 text-xs font-mono"
+                      >
+                        <div className="bg-neutral-950 border border-neutral-800 p-5 rounded-2xl w-full max-w-[420px] text-zinc-400">
+                          <p className="text-[#FF6B00] font-bold">SQLITE EXECUTION ENVIRONMENT // DRIFT</p>
+                          <p className="text-zinc-500 text-[10px] mt-1">{"$ select * from client_milestones order by date desc limit 2;"}</p>
+                          <div className="border-t border-neutral-800 pt-3 mt-3 space-y-1.5 text-[9px]">
+                            <p className="text-emerald-400">├─ pactora_key: 120 (Drift.enc_cipher)</p>
+                            <p className="text-zinc-500">└─ [READ] Completed in 0.04 ms (Locked local cache)</p>
+                          </div>
+                        </div>
+                        <span className="font-sans text-xs text-center text-[#666666]">
+                          C-bindings integrated directly within Flutter threads. Guarantees permanent on-device storage.
+                        </span>
+                      </motion.div>
+                    )}
+
+                    {activeArchTab === 'ai' && (
+                      <motion.div
+                        key="ai"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full flex flex-col items-center gap-6"
+                      >
+                        <div className="flex items-center gap-4 font-mono text-xs">
+                          <div className="px-3.5 py-4 bg-[#FF6B00]/5 border border-[#FF6B00]/30 rounded-xl text-center w-28 text-[#FF6B00]">
+                            <Sparkles size={16} />
+                            <span className="block mt-1 font-bold text-[8.5px]">GEMINI CORE</span>
+                          </div>
+                          <span className="text-zinc-300">──</span>
+                          <div className="px-3.5 py-4 bg-zinc-50 border border-zinc-200 rounded-xl text-center w-28">
+                            <Lock size={16} className="text-[#666666] mx-auto" />
+                            <span className="block mt-1 font-bold text-[8.5px]">SECURE SANDBOX</span>
+                          </div>
+                        </div>
+                        <div className="bg-[#FAFAFA] border border-zinc-150 p-4 rounded-xl text-center max-w-sm text-xs font-sans">
+                          <p className="font-bold text-[#111111] mb-0.5">Gemini Campus Lead Optimization</p>
+                          <p className="text-[#666666]">Derives context and matches summaries directly in sandbox threads, protecting keys securely.</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                </div>
+
+                {/* Bottom informational metrics */}
+                <div className="border-t border-zinc-100 pt-4 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-[#666666] gap-2">
+                  <span>DATABASE DISK TIME: 0 ms</span>
+                  <span className="text-[#FF6B00] font-bold">100% OFFLINE EXCLUSION READY</span>
+                </div>
+              </div>
+            )}
 
           </div>
 
         </div>
-
       </section>
 
-      {/* 5. NEW BENTO GRID: ENGINEERING PHILOSOPHY & TOOLKIT */}
-      <section className="py-24 px-6 max-w-7xl mx-auto border-t border-zinc-200/80 relative z-10">
-        
-        {/* Headings */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 md:mb-20 px-2">
-          <div className="flex flex-col items-start gap-2 max-w-xl">
-            <span className="text-amber text-[10px] font-bold tracking-[0.3em] uppercase bg-amber-dim px-3.5 py-1.5 rounded-full border border-amber/15 shadow-sm">
-              ENGINEERING PHILOSOPHY & METRICS
-            </span>
-            <h2 className="font-syne font-black text-4xl sm:text-5.5xl text-zinc-950 tracking-tight mt-2.5">
-              Production Standard Ideology
-            </h2>
-            <div className="w-16 h-1 bg-amber rounded-full mt-2" />
-          </div>
-          <p className="font-sans text-zinc-650 text-base leading-relaxed max-w-sm mt-3 lg:mt-0 select-none">
-            I refuse sandbox shortcuts. Every widget, state model, and background channel must align with professional store deployments.
-          </p>
-        </div>
 
-        {/* Bento Board Layout Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 select-none font-sans mt-4">
+      {/* ###################################
+          7. TECHNOLOGY STACK (Premium wall of tags, looking expensive and important)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-white z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-center flex flex-col items-center">
           
-          {/* Card 1: Col-span-2 - Offline First */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6 }}
-            className="md:col-span-2 bg-white hover:bg-white/95 border border-zinc-200 rounded-3xl p-8 hover:border-amber hover:shadow-[0_15px_35px_rgba(234,88,12,0.04)] transition-all duration-300 flex flex-col justify-between gap-8 group"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/50 flex items-center justify-center text-xl text-amber group-hover:scale-110 transition-transform duration-300">
-                <Database size={20} />
-              </div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-200/50">
-                100% OFFLINE SECURE
-              </span>
-            </div>
-            <div>
-              <h3 className="font-syne font-bold text-xl sm:text-2.5xl text-zinc-950 group-hover:text-amber transition-colors">
-                The Offline-First Supremacy
-              </h3>
-              <p className="text-zinc-650 text-sm sm:text-base leading-relaxed mt-3">
-                Excessive cloud reliance degrades cellular battery life, introduces connection blockers, and endangers user data privacy. 
-                My application systems isolate processing pipelines locally. By binding thread-safe libraries like SQLite or Hive, data writes 
-                stay strictly on-device, processing responsive transactions instantly.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-100">
-              {['Dart Drift', 'SQLite Bevels', 'Hive Binary Cells', 'AES Encrypter Keyrings'].map(tag => (
-                <span key={tag} className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 text-zinc-600 px-3 py-1.5 rounded-full">{tag}</span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Card 2: Col-span-1 - Ambassador */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-white hover:bg-white/95 border border-zinc-200 rounded-3xl p-8 hover:border-amber hover:shadow-[0_15px_35px_rgba(234,88,12,0.04)] transition-all duration-300 flex flex-col justify-between gap-6 group"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/50 flex items-center justify-center text-xl text-amber group-hover:scale-110 transition-transform duration-300">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h3 className="font-syne font-bold text-xl text-zinc-950 group-hover:text-amber transition-colors">
-                Gemini Campus Ambassador
-              </h3>
-              <p className="text-zinc-650 text-sm leading-relaxed mt-2.5">
-                Representing Google Gemini at Sandip Foundation allows me to explore offline-capable AI models. I design systems integrating speech VoIP loops, dynamic on-device translation streams, and intelligent text filters directly inside high-performance client frameworks.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-zinc-100">
-              {['Gemini Live SDK', 'Audio Streaming', 'ML验证', 'Campus Lead'].map(tag => (
-                <span key={tag} className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-full">{tag}</span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Card 3: Col-span-1 - State */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="bg-white hover:bg-white/95 border border-zinc-200 rounded-3xl p-8 hover:border-amber hover:shadow-[0_15px_35px_rgba(234,88,12,0.04)] transition-all duration-300 flex flex-col justify-between gap-6 group"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/50 flex items-center justify-center text-xl text-amber group-hover:scale-110 transition-transform duration-300">
-              <Cpu size={20} />
-            </div>
-            <div>
-              <h3 className="font-syne font-bold text-xl text-zinc-950 group-hover:text-amber transition-colors">
-                Reactive Thread-Isolates
-              </h3>
-              <p className="text-zinc-650 text-sm leading-relaxed mt-2.5">
-                Securing a sustained 120Hz smooth scrolling experience requires routing heavy database processes outside the UI loop. 
-                I map modular Dart threading isolates, live caching buffers, and Riverpod streaming states to avoid render stutters completely.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-zinc-100">
-              {['Riverpod State', 'Multi-Thread Isolate', 'Binary Caches', 'WebSocket Streams'].map(tag => (
-                <span key={tag} className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-full">{tag}</span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Card 4: Col-span-2 - Production Ready */}
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="md:col-span-2 bg-white hover:bg-white/95 border border-zinc-200 rounded-3xl p-8 hover:border-amber hover:shadow-[0_15px_35px_rgba(234,88,12,0.04)] transition-all duration-300 flex flex-col justify-between gap-8 group"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/50 flex items-center justify-center text-xl text-amber group-hover:scale-110 transition-transform duration-300">
-                <Smartphone size={20} />
-              </div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/50">
-                PRODUCTION HARDENED
-              </span>
-            </div>
-            <div>
-              <h3 className="font-syne font-bold text-xl sm:text-2.5xl text-zinc-950 group-hover:text-amber transition-colors">
-                Full-Lifecycle Revenue Compliance
-              </h3>
-              <p className="text-zinc-650 text-sm sm:text-base leading-relaxed mt-3">
-                A premium design requires clean monetization hooks. I structure custom Google AdMob adaptive display card overlays, 
-                multi-tier membership pipelines utilizing RevenueCat SDK endpoints, and direct transactional subscription handlers, 
-                aligning flawless aesthetics with sustainable production deployments.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-3 border-t border-zinc-100">
-              {['AdMob SDK', 'RevenueCat Hooks', 'PlayStore Release', 'GDPR Integrity'].map(tag => (
-                <span key={tag} className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 text-zinc-600 px-3 py-1.5 rounded-full">{tag}</span>
-              ))}
-            </div>
-          </motion.div>
-
-        </div>
-      </section>
-
-      {/* 6. ABOUT STRIP SECTION */}
-      <section className="py-28 md:py-36 px-6 max-w-7xl mx-auto border-t border-zinc-200/80 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
-          
-          {/* Left: resume details info (55%) */}
-          <div className="lg:col-span-7 flex flex-col items-start gap-5">
-            <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-bold bg-zinc-100 px-3 py-1 rounded-md">
-              BACKGROUND PROFILE
+          <div className="flex flex-col items-center gap-3.5 mb-20 max-w-xl text-center">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              TECH STACK & ENGINE WRAPPING
             </span>
-            <h2 className="font-syne font-black text-4xl sm:text-5.5xl text-zinc-950 tracking-tight mt-1">
-              Who builds this stuff?
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 leading-[1.05]">
+              Professional Tech Wall
             </h2>
-            <div className="font-sans text-zinc-650 text-base leading-relaxed flex flex-col gap-5 mt-4">
-              <p>
-                I am <span className="text-zinc-950 font-extrabold underline decoration-amber decoration-2">Sooubh (Sourabh Singh)</span>, 
-                a Computer Engineering researcher and developer at SITRC Sandip Foundation, Nashik. My core dedication is creating clean 
-                native mobile ecosystems that treat user data with the ultimate respect.
-              </p>
-              <p>
-                As a persistent builder, my routine focus centers around Flutter-first local environments, persistent database engines, 120Hz scrolling 
-                interfaces, dynamic WebSocket scoring integrations, and secure edge computation loops.
-              </p>
-              <p>
-                Beyond serving as Sandip Foundation's Google Gemini Campus Ambassador, I attended AWS Summit Mumbai 2026, which honed my concepts 
-                of cloud sync architectures. Every project I deploy is fully real, documented, and responsive.
-              </p>
-            </div>
+            <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed mt-2.5">
+              Not small icons. These platforms represent core proficiencies and are treated with structural respect in my engineering blueprints.
+            </p>
           </div>
 
-          {/* Right: Code Block mock (45%) */}
-          <div className="lg:col-span-5 h-full w-full">
-            <motion.div 
-              initial={{ rotate: 1 }}
-              whileHover={{ rotate: 0, scale: 1.01 }}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-3xl p-8 font-mono text-xs sm:text-sm text-zinc-300 shadow-2xl relative overflow-hidden"
-            >
-              <div className="flex gap-1.5 mb-6 border-b border-zinc-800/80 pb-5">
-                <div className="w-3.5 h-3.5 rounded-full bg-red-500/80" />
-                <div className="w-3.5 h-3.5 rounded-full bg-yellow-500/80" />
-                <div className="w-3.5 h-3.5 rounded-full bg-green-500/80" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4.5 w-full max-w-[1300px]">
+            {[
+              { name: 'Flutter', ext: 'Multi-platform SDK' },
+              { name: 'Dart', ext: 'Strong Type Language' },
+              { name: 'Firebase', ext: 'Cloud Backend Suite' },
+              { name: 'Supabase', ext: 'Relational Cloud Database' },
+              { name: 'Riverpod', ext: 'Reactive Signaling Provider' },
+              { name: 'Drift', ext: 'Thread-Isolated SQLite' },
+              { name: 'Hive', ext: 'NoSQL Local byte storage' },
+              { name: 'SQLite', ext: 'Structured Database C-bindings' },
+              { name: 'GoRouter', ext: 'Declarative routing engine' },
+              { name: 'WebSocket', ext: 'Bidirectional binary events' },
+              { name: 'AWS', ext: 'Cloud Architecture systems' },
+              { name: 'GitHub', ext: 'Version control workflows' },
+              { name: 'Docker', ext: 'Container compilation boxes' },
+              { name: 'GitLab CI/CD', ext: 'Automated package registers' }
+            ].map((tech, i) => (
+              <div 
+                key={i}
+                className="bg-[#FAFAFA] border border-zinc-150 p-6 rounded-2xl hover:border-[#FF6B00] hover:bg-white hover:scale-[1.03] transition-all duration-300 flex flex-col items-start gap-2.5 text-left group"
+              >
+                <span className="font-syne font-black text-lg text-[#111111] group-hover:text-[#FF6B00] transition-colors">
+                  {tech.name}
+                </span>
+                <span className="font-sans text-[10px] text-[#666666] leading-snug">
+                  {tech.ext}
+                </span>
               </div>
-              
-              <div className="space-y-1.5 sm:space-y-2 select-text">
-                <p><span className="text-rose-400">const</span> <span className="text-amber font-bold">sooubh</span> = &#123;</p>
-                <p className="pl-5 text-zinc-400">
-                  <span className="text-sky-400">primaryStack</span>: [
-                  <span className="text-emerald-400">'Flutter (Android/iOS)'</span>, 
-                  <span className="text-emerald-400">'Dart'</span>, 
-                  <span className="text-emerald-400">'SQLite'</span>
-                  ],
-                </p>
-                <p className="pl-5 text-zinc-400">
-                  <span className="text-sky-400">loves</span>: <span className="text-emerald-400">'offline-first autonomy 📱'</span>,
-                </p>
-                <p className="pl-5 text-zinc-400">
-                  <span className="text-sky-400">academicInstitution</span>: <span className="text-emerald-400">'SITRC Sandip Foundation'</span>,
-                </p>
-                <p className="pl-5 text-zinc-400">
-                  <span className="text-sky-400">baseLocation</span>: <span className="text-emerald-400">'Nashik, India 🇮🇳'</span>,
-                </p>
-                <p className="pl-5 text-zinc-400">
-                  <span className="text-sky-400">currentStatus</span>: <span className="text-emerald-400">'Shipping production tools'</span>,
-                </p>
-                <p>&#125;;</p>
-              </div>
-            </motion.div>
+            ))}
           </div>
+
         </div>
       </section>
 
-      {/* 7. CTA BANNER SECTION */}
-      <section className="py-28 md:py-36 px-6 border-t border-zinc-200/80 bg-zinc-950 text-white relative overflow-hidden z-10">
-        
-        {/* Subtle warm center radial highlight */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-80"
-          style={{
-            background: 'radial-gradient(circle at center, rgba(234,88,12,0.12) 0%, rgba(0,0,0,0) 55%)',
-          }}
-        />
 
-        <div className="max-w-3xl mx-auto flex flex-col items-center justify-center text-center gap-8 relative select-none">
-          <span className="text-[10px] uppercase font-mono tracking-[0.3em] text-zinc-400 font-bold bg-zinc-800 px-4.5 py-2 rounded-full border border-zinc-700 shadow-sm">
-            HAVE A PRODUCTION VENTURE?
+      {/* ###################################
+          8. JOURNEY TIMELINE (Modern timeline visuals showing progression)
+          ################################### */}
+      <motion.section
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={sectionVariants}
+        className="py-28 sm:py-36 bg-[#FAFAFA] border-y border-zinc-100 z-10 relative"
+      >
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 select-none">
+          
+          <motion.div variants={itemVariants} className="flex flex-col items-start gap-3.5 mb-24 max-w-xl">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              JOURNEY CHRONOLOGY
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 leading-[1.05]">
+              Journey Timeline
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed mt-1">
+              Timeline of milestones, code iterations, and engineering progression.
+            </p>
+          </motion.div>
+
+          <div className="relative border-l border-zinc-200 ml-4 md:ml-12 pl-8 md:pl-16 py-2 space-y-16">
+            
+            {[
+              {
+                year: '2023',
+                title: 'Started Flutter Exploration',
+                desc: 'Bypassed native platform shortcuts. Explored rendering loop structures, frame budgets, native thread bindings, and multi-platform compilation paradigms.'
+              },
+              {
+                year: '2024',
+                title: 'First Production App Launched',
+                desc: 'Designed and deployed Pactora on the Google Play Store Console. Discovered the flaws of standard sync models, establishing my offline-first development policy.'
+              },
+              {
+                year: '2025',
+                title: 'Google Gemini Campus Ambassador & National Hackathon Gold',
+                desc: 'Elected Google Gemini representative at Sandip Foundation, leading local student developer communities and seminars. Won the national gold prize for localized secure applications.'
+              },
+              {
+                year: '2026',
+                title: 'Building Lovyn',
+                desc: 'Engineering Sourabh’s flagship product. An elegant relationship interface packing high-performance WebRTC matching overlays, symmetric local ciphers, and conversational Gemini LLM tools.'
+              }
+            ].map((event, idx) => (
+              <motion.div key={idx} variants={itemVariants} className="relative group">
+                {/* Visual Timeline Marker Node */}
+                <div className="absolute -left-[41px] md:-left-[73px] top-1.5 w-6 h-6 rounded-full bg-white border-2 border-[#FF6B00] flex items-center justify-center transition-transform group-hover:scale-125 z-10 shadow-sm">
+                  <div className="w-2 h-2 rounded-full bg-[#FF6B00]" />
+                </div>
+
+                <div className="flex flex-col gap-1.5 max-w-3xl">
+                  <span className="font-mono text-xs sm:text-sm text-[#FF6B00] font-bold">
+                    {event.year}
+                  </span>
+                  <h3 className="font-syne font-extrabold text-xl sm:text-2xl text-[#111111] tracking-tight">
+                    {event.title}
+                  </h3>
+                  <p className="font-sans text-[#666666] text-sm leading-relaxed mt-1.5 select-text">
+                    {event.desc}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+
+          </div>
+
+        </div>
+      </motion.section>
+
+
+      {/* ###################################
+          9. NUMBERS THAT MATTER (Typography as design, massive text)
+          ################################### */}
+      <section className="py-32 sm:py-44 bg-white z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-center flex flex-col items-center">
+          <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase mb-16">
+            // CRUCIAL DATA CODES
           </span>
-          <h2 className="font-syne font-black text-4xl sm:text-6xl text-white tracking-tight leading-none mt-2.5">
-            Let's build something real.
-          </h2>
-          <p className="font-sans text-zinc-400 text-lg leading-relaxed max-w-lg select-none">
-            Avoid the standard cookie-cutter layouts. I construct high-integrity architectures 
-            fully customized to sustain actual app store scales.
-          </p>
 
-          <Link
-            to="/contact"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="px-10 py-5 bg-amber hover:bg-amber-glow text-white font-bold rounded-full text-base hover:scale-105 transition-transform duration-300 shadow-2xl mt-4 flex items-center justify-center gap-2 cursor-pointer select-text"
-          >
-            <span>Get in Touch</span>
-            <ArrowRight size={16} className="text-zinc-950 font-bold" />
-          </Link>
+          <div className="flex flex-col gap-16 md:gap-24 w-full">
+            {/* Number Row 1 */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 hover:translate-y-[-4px] transition-transform duration-300">
+              <span className="font-syne font-black text-7xl sm:text-9xl lg:text-[11rem] text-[#111111] leading-none tracking-tighter">
+                15K+
+              </span>
+              <div className="text-left max-w-xs">
+                <h3 className="font-syne font-bold text-lg sm:text-xl text-[#111111] leading-none">Interactions</h3>
+                <p className="font-sans text-xs sm:text-sm text-[#666666] mt-1.5">Unbroken transactional operations logged on device sqlite caches.</p>
+              </div>
+            </div>
+
+            {/* Number Row 2 */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 hover:translate-y-[-4px] transition-transform duration-300">
+              <span className="font-syne font-black text-7xl sm:text-9xl lg:text-[11rem] text-[#FF6B00] leading-none tracking-tighter">
+                100%
+              </span>
+              <div className="text-left max-w-xs">
+                <h3 className="font-syne font-bold text-lg sm:text-xl text-[#111111] leading-none">Offline Isolation</h3>
+                <p className="font-sans text-xs sm:text-sm text-[#666666] mt-1.5">No servers, no telemetry mining, no cloud network dependence.</p>
+              </div>
+            </div>
+
+            {/* Number Row 3 */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 hover:translate-y-[-4px] transition-transform duration-300">
+              <span className="font-syne font-black text-7xl sm:text-9xl lg:text-[11rem] text-[#111111] leading-none tracking-tighter">
+                0ms
+              </span>
+              <div className="text-left max-w-xs">
+                <h3 className="font-syne font-bold text-lg sm:text-xl text-[#111111] leading-none">Local Reads</h3>
+                <p className="font-sans text-xs sm:text-sm text-[#666666] mt-1.5">Byte buffers stored locally, delivering instant interface response.</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
+
+
+      {/* ###################################
+          10. TESTIMONIALS (Premium testimonial cards with realistic placeholders)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-[#FAFAFA] border-y border-zinc-100 z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          
+          <div className="flex flex-col items-start gap-3.5 mb-24 max-w-xl">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              PEER FEEDBACKS
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 leading-[1.05]">
+              Testimonials
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed mt-1">
+              Collaborative references from founders, senior engineers, and student leaders.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                text: '“Sourabh represents a rare class of developers who prioritize product details and performance loops. He didn’t just draft a standard client dashboard — he built structured Drift SQLite tables with thread isolations.”',
+                author: 'Piyush K.',
+                role: 'Senior Founder, DevSuite India',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80'
+              },
+              {
+                text: '“As our Google Gemini Campus Ambassador, Sourabh organized outstanding workshops. He goes beyond simple API calls, exploring complex offline-mode translation streams designed for native apps.”',
+                author: 'Anjali Sharma',
+                role: 'SITRC Faculty Advisor, Sandip Foundation',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80'
+              },
+              {
+                text: '“His offline scoring engine in cricket apps has outstanding local speed. It handles continuous scores over peer-to-peer Wi-Fi networks in areas with completely blocked internet links.”',
+                author: 'Ravi Teja',
+                role: 'Full-Stack Lead, Apex Labs',
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80'
+              }
+            ].map((test, index) => (
+              <div 
+                key={index}
+                className="bg-white border border-zinc-200 p-8.5 rounded-3xl hover:border-[#FF6B00] hover:shadow-[0_12px_40px_rgba(0,0,0,0.01)] transition-all duration-300 flex flex-col justify-between gap-8"
+              >
+                <div className="flex gap-1.5 text-yellow-500">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={15} fill="currentColor" />)}
+                </div>
+
+                <p className="font-sans text-[#111111] text-sm sm:text-[14.5px] leading-relaxed italic select-text">
+                  {test.text}
+                </p>
+
+                <div className="flex items-center gap-3.5 border-t border-zinc-100 pt-5">
+                  <img src={test.avatar} alt={test.author} referrerPolicy="no-referrer" className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm shrink-0" />
+                  <div>
+                    <h4 className="font-syne font-extrabold text-[#111111] text-sm tracking-tight">{test.author}</h4>
+                    <span className="text-[10px] text-[#666666] font-sans mt-0.5 block">{test.role}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ###################################
+          11. BUILDING IN PUBLIC (Show roadmaps, experiments, projects, LOVYN prominently)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-white z-10 relative">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16 md:mb-20">
+            <div className="lg:col-span-6 flex flex-col items-start gap-3.5">
+              <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+                ACTIVE LAB LOGS
+              </span>
+              <h2 className="font-syne font-extrabold text-4xl sm:text-5.5xl text-[#111111] tracking-tight leading-none">
+                Building in Public
+              </h2>
+            </div>
+            <div className="lg:col-span-6">
+              <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed max-w-xl">
+                I believe in engineering transparency. This live dashboard shows ongoing product builds, current timeline roadmaps, and experiments inside Sourabh’s active sandbox environment.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            
+            {/* Box 1: Lovyn Stealth Status */}
+            <div className="bg-[#FAFAFA] border border-zinc-200 p-8.5 rounded-3xl flex flex-col justify-between gap-8">
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-3xl">🔥</span>
+                  <span className="text-[9px] font-mono font-bold uppercase text-[#FF6B00] bg-[#FF6B00]/5 px-2.5 py-1 rounded-full border border-[#FF6B00]/10">FLAGSHIP BUILD</span>
+                </div>
+                <h3 className="font-syne font-extrabold text-xl text-[#111111]">Building Lovyn</h3>
+                <p className="font-sans text-xs sm:text-sm text-[#666666] leading-relaxed mt-3">
+                  Sourabh’s premium matching platform with WebRTC connection protocols, offline memory ciphers, and conversational Gemini LLM tools is actively under private beta testing.
+                </p>
+              </div>
+
+              <div className="border-t border-zinc-200/60 pt-4 mt-2">
+                <span className="text-[10px] font-mono font-bold text-[#111111] uppercase tracking-wider block mb-2">Lovyn Roadmap Milestones</span>
+                <div className="space-y-2 text-[11px] font-mono">
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="shrink-0" size={12} />
+                    <span>Configure local Drift SQLite keys</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="shrink-0" size={12} />
+                    <span>Establish peer matches using WebRTC</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#FF6B00] font-bold">
+                    <RefreshCw className="animate-spin shrink-0" size={12} />
+                    <span>Gemini speech voice streams (90% complete)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Box 2: Sandbox Interactive Simulation */}
+            <div className="bg-white border border-zinc-200 p-8.5 rounded-3xl flex flex-col justify-between gap-6 shadow-[0_4px_30px_rgba(0,0,0,0.015)]">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-mono text-[9px] text-[#FF6B00] font-bold tracking-wider">// LOCAL SQL GENERATOR</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+                </div>
+                <h3 className="font-syne font-extrabold text-lg text-[#111111]">Interactive State Log</h3>
+                <p className="font-sans text-xs text-[#666666] leading-relaxed mt-1.5">
+                  Simulate local mutation queries by adding tasks inside our Pactora digital database below.
+                </p>
+
+                {/* Simulated list */}
+                <div className="space-y-2 font-sans text-xs mt-4">
+                  {promises.map(p => (
+                    <div 
+                      key={p.id}
+                      onClick={() => handleTogglePromise(p.id, p.title)}
+                      className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                        p.kept 
+                          ? 'bg-green-50 border-green-200 text-green-800' 
+                          : 'bg-zinc-50 border-zinc-200 text-[#111111] hover:bg-zinc-100'
+                      }`}
+                    >
+                      <span className="truncate pr-4 max-w-[80%] font-semibold">{p.title}</span>
+                      <span className="font-mono text-[8px] bg-white border border-zinc-200 px-1.5 py-0.5 rounded uppercase font-bold text-[#666666] shrink-0">
+                        {p.kept ? 'Done' : 'Wait'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={handleAddPromise}
+                  className="w-full mt-3 bg-[#111111] hover:bg-[#FF6B00] text-white font-mono font-bold text-[10px] py-2.5 rounded-xl cursor-pointer text-center transition-colors"
+                >
+                  + Add Simulated Task
+                </button>
+              </div>
+
+              {/* Live console logs */}
+              <div className="bg-neutral-950 text-zinc-400 font-mono text-[9px] rounded-xl p-3.5 space-y-1 select-text">
+                <span className="text-[#FF6B00] font-bold block border-b border-zinc-800 pb-1 mb-1.5">// SQL DIALOGSTREAM TERMINAL</span>
+                {simulatedLogs.map((log, i) => (
+                  <p key={i} className="truncate">{log}</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Box 3: Experimental Suite */}
+            <div className="bg-[#FAFAFA] border border-zinc-200 p-8.5 rounded-3xl flex flex-col justify-between gap-8">
+              <div>
+                <span className="text-3xl">🧪</span>
+                <h3 className="font-syne font-extrabold text-xl text-[#111111] mt-5">Ongoing Experiments</h3>
+                <p className="font-sans text-xs sm:text-sm text-[#666666] leading-relaxed mt-3">
+                  Exploring high-integrity interfaces, decentralized storage models, and localized thread behaviors outside the main application framework.
+                </p>
+                
+                <div className="mt-5 space-y-3.5 text-xs">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-[9px] font-bold text-zinc-400">120HZ RENDER BENCHMARKS</span>
+                    <p className="font-sans text-[#111111] font-medium">Locked scrolling layouts inside massive lists avoiding micro-stuttering.</p>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-[9px] font-bold text-zinc-400">GEMINI LIVE AUDIO VOIP</span>
+                    <p className="font-sans text-[#111111] font-medium">Bypassing Web server routing to run localized voice triggers instantly on devices.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 text-center">
+                <span className="text-xs font-sans text-zinc-500 font-bold">STEALTH BETA STATUS: STABLE</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ###################################
+          12. OPEN SOURCE & GITHUB (Professional contribution style dashboard)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-[#FAFAFA] border-y border-zinc-100 z-10 relative">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 select-none">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
+            <div className="lg:col-span-5 flex flex-col items-start gap-3.5">
+              <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+                GITHUB HUB
+              </span>
+              <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight leading-none mt-2">
+                Open Source & Github
+              </h2>
+            </div>
+            <div className="lg:col-span-7">
+              <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed max-w-md">
+                Review verified code credentials inside my public workspace. All projects have continuous integration packages, proper modular separation, and documentation.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-zinc-200 p-8 sm:p-10 rounded-[2rem] shadow-[0_12px_40px_rgba(0,0,0,0.01)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Col (Col-span-5) - GitHub profile summary */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-xl">
+                  S
+                </div>
+                <div>
+                  <h3 className="font-syne font-extrabold text-lg sm:text-xl text-[#111111] tracking-tight">
+                    Sourabh Singh
+                  </h3>
+                  <a href="https://github.com/sooubh" target="_blank" rel="noreferrer referrer" className="text-xs font-mono text-[#FF6B00] font-bold">
+                    @sooubh
+                  </a>
+                </div>
+              </div>
+
+              <p className="font-sans text-xs sm:text-sm text-[#666666] leading-relaxed">
+                Computer Engineering developer building high-quality localized packages, Dart SQLite modules, and reactive state signaling providers. Currently maintaining multiple live repositories.
+              </p>
+
+              <div className="grid grid-cols-3 gap-3 font-mono text-center text-xs">
+                <div className="bg-[#FAFAFA] border border-zinc-150 p-3 rounded-xl">
+                  <span className="block font-black text-lg text-[#111111]">12+</span>
+                  <span className="text-[9px] text-[#666666] uppercase mt-0.5 block font-bold">Repositories</span>
+                </div>
+                <div className="bg-[#FAFAFA] border border-zinc-150 p-3 rounded-xl">
+                  <span className="block font-black text-lg text-[#111111]">400+</span>
+                  <span className="text-[9px] text-[#666666] uppercase mt-0.5 block font-bold">Contributions</span>
+                </div>
+                <div className="bg-[#FAFAFA] border border-zinc-150 p-3 rounded-xl">
+                  <span className="block font-black text-lg text-[#111111]">99.9%</span>
+                  <span className="text-[9px] text-[#666666] uppercase mt-0.5 block font-bold">Uptime</span>
+                </div>
+              </div>
+
+              <a 
+                href="https://github.com/sooubh" 
+                target="_blank" 
+                rel="noreferrer referrer"
+                className="px-6 py-3 bg-[#111111] hover:bg-[#FF6B00] text-white font-mono text-xs font-bold rounded-xl flex items-center justify-center gap-2 self-start transition-colors w-full sm:w-auto"
+              >
+                <GitBranch size={13} />
+                <span>Explore GitHub Profile</span>
+                <ChevronRight size={12} className="text-[#FF6B00]" />
+              </a>
+            </div>
+
+            {/* Right Col (Col-span-7) - Clean Git timeline or top repo list card mockup */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              <span className="font-mono text-[10px] text-zinc-400 font-bold uppercase tracking-wider block mb-1">Featured Public Repositories</span>
+              
+              {[
+                { name: 'pactora-drift-module', stars: 12, desc: 'Secure localized transaction database ledger structures wrapped inside Drift C-bindings.', lang: 'Dart' },
+                { name: 'gully-scoring-overlay', stars: 8, desc: 'A background service engine keeping floating overlay scorecards live on Android.', lang: 'Flutter' },
+                { name: 'secure-symmetric-keyring', stars: 15, desc: 'Symmetric encryption wrapper protecting state parameters on low-end mobile devices.', lang: 'Dart' }
+              ].map((repo, i) => (
+                <div 
+                  key={i} 
+                  className="bg-[#FAFAFA] border border-zinc-150 hover:border-[#FF6B00] p-5 rounded-2xl transition-all flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 group cursor-pointer"
+                >
+                  <div className="max-w-[80%] flex flex-col gap-1 text-left">
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#111111] group-hover:text-[#FF6B00] transition-colors">{repo.name}</span>
+                    <span className="font-sans text-xs text-[#666666] leading-relaxed select-text">{repo.desc}</span>
+                  </div>
+                  <div className="flex items-center gap-3.5 font-mono text-[10px] shrink-0 self-end sm:self-center">
+                    <span className="flex items-center gap-1 text-zinc-500">
+                      <Star size={11} fill="currentColor" />
+                      {repo.stars}
+                    </span>
+                    <span className="bg-[#FF6B00]/5 text-[#FF6B00] px-2 py-0.5 rounded border border-[#FF6B00]/10 font-bold">{repo.lang}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ###################################
+          13. COMMUNITY & LEADERSHIP (Google Gemini Ambassador, community seminars)
+          ################################### */}
+      <section className="py-28 sm:py-36 bg-white z-10 relative select-none">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-center flex flex-col items-center">
+          
+          <div className="flex flex-col items-center gap-3.5 mb-24 max-w-xl text-center">
+            <span className="text-[#FF6B00] text-[10px] font-mono font-bold tracking-[0.25em] uppercase bg-[#FF6B00]/5 px-3.5 py-1.5 rounded-full">
+              COMMUNITY IMPACT
+            </span>
+            <h2 className="font-syne font-extrabold text-4xl sm:text-6xl text-[#111111] tracking-tight mt-2 leading-[1.05]">
+              Community & Leadership
+            </h2>
+            <p className="font-sans text-[#666666] text-sm sm:text-base leading-relaxed mt-2.5">
+              Leading local developer communities, steering technical workshops, and exploring the future of artificial intelligence.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch max-w-[1250px] w-full text-left">
+            {/* Main box (Col-span-7) - Google Gemini Ambassador */}
+            <div className="lg:col-span-7 bg-[#FAFAFA] border border-zinc-200 p-8 sm:p-10 rounded-3xl flex flex-col justify-between gap-8">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#FF6B00] shrink-0">
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-[#FF6B00] tracking-wider uppercase font-extrabold">GOOGLE PARTNERSHIP PROGRAM</span>
+                    <h3 className="font-syne font-extrabold text-xl sm:text-2xl text-[#111111] tracking-tight">Google Gemini Campus Ambassador</h3>
+                  </div>
+                </div>
+                
+                <p className="font-sans text-xs sm:text-sm text-[#666666] leading-relaxed mt-2">
+                  Representing Google’s artificial intelligence department on-campus at SITRC Sandip Foundation. Delivering high-quality developer bootcamps, managing peer interest groups, and designing custom offline-mode translation structures designed for native architectures.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-t border-zinc-200/60 pt-6 text-xs">
+                <div>
+                  <span className="block font-semibold text-[#666666] font-mono text-[9.5px]">ROLE ASSIGNED</span>
+                  <span className="text-[#111111] font-bold">Google representative</span>
+                </div>
+                <div>
+                  <span className="block font-semibold text-[#666666] font-mono text-[9.5px]">AFFILIATED INSTITUTION</span>
+                  <span className="text-[#111111] font-bold">SITRC Sandip Foundation</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Side list box (Col-span-5) - Speaking, workshops */}
+            <div className="lg:col-span-5 bg-white border border-zinc-200 p-8 sm:p-10 rounded-3xl flex flex-col justify-between gap-6">
+              <h4 className="font-syne font-extrabold text-lg text-[#111111]">Key Accomplishments</h4>
+              
+              <div className="space-y-4 font-sans text-xs text-[#666666] leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[#FF6B00] mt-1.5 shrink-0" />
+                  <div>
+                    <span className="text-[#111111] font-bold block">Developer Hackathon Seminars</span>
+                    <span>Trained over 400+ student engineers across Nashik on offline encryption, Drift modular architectures, and secure device key derivation.</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[#FF6B00] mt-1.5 shrink-0" />
+                  <div>
+                    <span className="text-[#111111] font-bold block">AWS Mumbai Summit Attendee</span>
+                    <span>Honed concepts of synchronized offline-first data engines, local cellular routing, and transactional caching layers under AWS architects.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-100 pt-4 text-center font-mono text-[10px] text-zinc-400 font-bold">
+                COMMUNITY NETWORK ACTIVE
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ###################################
+          14. FINAL CTA (Large full-width premium memorable panel)
+          ################################### */}
+      <section className="py-32 sm:py-44 px-6 bg-[#FAFAFA] border-t border-zinc-150 relative overflow-hidden z-10 select-none">
+        {/* Subtle radial center flow */}
+        <div className="absolute inset-0 bg-radial-[circle,rgba(255,107,0,0.02)_0%,rgba(0,0,0,0)_65%] blur-2xl rounded-full pointer-events-none" />
+
+        <div className="max-w-[1400px] mx-auto flex flex-col items-center justify-center text-center gap-8 relative z-10">
+          <span className="text-xs font-mono font-bold tracking-[0.25em] text-[#FF6B00] bg-[#FF6B00]/5 px-4.5 py-1.5 rounded-full border border-[#FF6B00]/10">
+            HAVE A VISION TO BRING LIFE?
+          </span>
+          
+          <h2 className="font-syne font-black text-4xl sm:text-6xl lg:text-7.5xl text-[#111111] tracking-tight leading-[0.95] max-w-3xl mt-2 select-text">
+            Have an Idea? <br />
+            Let’s Build Something Amazing.
+          </h2>
+          
+          <p className="font-sans text-[#666666] text-base sm:text-lg leading-relaxed max-w-md mt-2">
+            Disrupt traditional paradigms. Cooperate with a founder-driven developer focused on delivering high performance, privacy, and visual perfection.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4.5 w-full sm:w-auto mt-4">
+            <Link
+              to="/contact"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="px-10 py-5 bg-[#111111] hover:bg-[#FF6B00] text-white font-bold rounded-full text-sm hover:scale-[1.03] active:scale-95 transition-all duration-300 shadow-[0_12px_30px_rgba(0,0,0,0.06)] flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              <span>Work With Me</span>
+              <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform text-[#FF6B00]" />
+            </Link>
+
+            <Link
+              to="/contact"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="px-10 py-5 bg-white border border-zinc-200 hover:border-[#111111] text-[#111111] font-bold rounded-full text-sm hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer"
+            >
+              Contact Me
+            </Link>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
